@@ -1,0 +1,15 @@
+[package]
+name = "cricket_pong_app_lib"
+version = "0.1.0"
+authors = ["Sean Sullivan <me@snen.dev>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+# cricket_pong_bots = { path = "../../bots" }
+cricket_pong_controls = { path = "../../controls" }
+cricket_pong_game = { path = "../../game" }
+cricket_pong_graphics = { path = "../../graphics" }
+bevy = "0.11"
+bevy_egui = { version = "0.21" }

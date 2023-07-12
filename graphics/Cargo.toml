@@ -1,0 +1,12 @@
+[package]
+name = "cricket_pong_graphics"
+version = "0.1.0"
+authors = ["Sean Sullivan <me@snen.dev>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+cricket_pong_base = { path = "../base" }
+bevy = "0.11"
+bevy_prototype_lyon = "0.9"

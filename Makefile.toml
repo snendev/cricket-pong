@@ -1,0 +1,21 @@
+[tasks.build-wasm-release]
+command = "cargo"
+args = ["build", "-p", "*_app_wasm", "--target", "wasm32-unknown-unknown", "--release"]
+workspace = false
+
+[tasks.build-wasm]
+command = "cargo"
+args = ["build", "-p", "*_app_wasm", "--target", "wasm32-unknown-unknown"]
+workspace = false
+
+[tasks.build-web]
+command = "wasm-bindgen"
+args = ["--out-dir", "wasm", "--target", "deno", "--no-typescript", "target/wasm32-unknown-unknown/debug/cricket_pong_app_wasm.wasm"]
+dependencies = ["build-wasm"]
+workspace = false
+
+[tasks.build-web-release]
+command = "wasm-bindgen"
+args = ["--out-dir", "wasm", "--target", "deno", "--no-typescript", "target/wasm32-unknown-unknown/release/cricket_pong_app_wasm.wasm"]
+dependencies = ["build-wasm-release"]
+workspace = false
