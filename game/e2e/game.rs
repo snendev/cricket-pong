@@ -25,11 +25,11 @@ pub enum GameplayState {
 
 fn spawn_players(mut commands: Commands) {
     commands.spawn((
-        Player::new(Objective::Batting),
+        Player::new(Objective::Batting, 1.try_into().unwrap()),
         BatterControllerBundle2::new(),
     ));
     commands.spawn((
-        Player::new(Objective::Fielding),
+        Player::new(Objective::Fielding, 2.try_into().unwrap()),
         FielderControllerBundle::new(),
     ));
 }

@@ -37,12 +37,12 @@ enum AppScreen {
 
 fn spawn_local_players(mut commands: Commands) {
     commands.spawn((
-        Player::new(Objective::Batting),
-        BatterControllerBundle2::new(),
+        Player::new(Objective::Fielding, 1.try_into().unwrap()),
+        FielderControllerBundle::new(),
     ));
     commands.spawn((
-        Player::new(Objective::Fielding),
-        FielderControllerBundle::new(),
+        Player::new(Objective::Batting, 2.try_into().unwrap()),
+        BatterControllerBundle2::new(),
     ));
 }
 

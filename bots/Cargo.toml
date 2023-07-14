@@ -10,6 +10,3 @@ publish = false
 cricket_pong_game = { path = "../game" }
 bevy = "0.10"
 big-brain = "0.17"
-
-[dev-dependencies]
-bevy_geppetto = { git = "https://github.com/snendev/bevy_geppetto.git" }

@@ -12,4 +12,4 @@ bevy = "0.11"
 leafwing-input-manager = "0.10"
 
 [dev-dependencies]
-bevy_geppetto = { git = "https://github.com/snendev/bevy_geppetto.git", rev = "b3c07ea" }
+bevy_geppetto = { git = "https://github.com/snendev/bevy_geppetto.git" }

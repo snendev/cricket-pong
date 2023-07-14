@@ -1,7 +1,7 @@
 use bevy_app::prelude::{App, Plugin, Update};
 use bevy_ecs::{
     prelude::{in_state, IntoSystemConfigs, OnEnter, SystemSet},
-    schedule::States,
+    schedule::{apply_deferred, States},
 };
 
 use bevy_math::prelude::Vec2;
@@ -13,9 +13,9 @@ pub use cricket_pong_base as base;
 pub mod actions;
 
 mod gameplay;
+use gameplay::GamePhase;
 
 mod objects;
-use gameplay::GamePhase;
 
 mod ui;
 
@@ -68,7 +68,9 @@ impl<GameplaySet: SystemSet + Copy, State: States + Copy> Plugin
             // TODO make this happen on a trigger
             .add_systems(
                 OnEnter(self.startup_state),
-                gameplay::spawn_scene.in_set(self.set),
+                (gameplay::spawn_scene, apply_deferred, ui::spawn_scoreboard)
+                    .chain()
+                    .in_set(self.set),
             )
             .add_systems(
                 OnEnter(GamePhase::Pitching),
@@ -79,6 +81,7 @@ impl<GameplaySet: SystemSet + Copy, State: States + Copy> Plugin
                 (
                     gameplay::consume_actions,
                     gameplay::register_goals.run_if(in_state(GamePhase::Active)),
+                    ui::update_scoreboard,
                 )
                     .in_set(self.set),
             );
