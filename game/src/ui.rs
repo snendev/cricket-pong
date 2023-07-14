@@ -41,7 +41,7 @@ fn spawn_player_scoreboard(commands: &mut Commands, player: &Player) {
                 },
                 ..Default::default()
             },
-            background_color: BackgroundColor(Color::AQUAMARINE),
+            background_color: BackgroundColor(Color::AZURE),
             ..Default::default()
         })
         .with_children(|parent| {
