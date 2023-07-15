@@ -6,7 +6,7 @@ use bevy_ecs::{
 use bevy_geppetto::Test;
 use bevy_rapier2d::render::RapierDebugRenderPlugin;
 
-use cricket_pong_base::{Objective, Player};
+use cricket_pong_base::{Player, Position};
 // use cricket_pong_bots::{BatterBotBundle, BotControllerPlugin};
 use cricket_pong_controls::{
     BatterControllerBundle2, FielderControllerBundle, PlayerControllerPlugin,
@@ -25,11 +25,13 @@ pub enum GameplayState {
 
 fn spawn_players(mut commands: Commands) {
     commands.spawn((
-        Player::new(Objective::Batting, 1.try_into().unwrap()),
+        Position::Batter,
+        Player::new(1.try_into().unwrap()),
         BatterControllerBundle2::new(),
     ));
     commands.spawn((
-        Player::new(Objective::Fielding, 2.try_into().unwrap()),
+        Position::Fielder,
+        Player::new(2.try_into().unwrap()),
         FielderControllerBundle::new(),
     ));
 }

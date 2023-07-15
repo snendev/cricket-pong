@@ -9,14 +9,12 @@ use bevy_math::prelude::Vec2;
 use bevy_rapier2d::prelude::{RapierConfiguration, RapierPhysicsPlugin};
 
 pub use cricket_pong_base as base;
+use scoring::Over;
 
 pub mod actions;
-
 mod gameplay;
-use gameplay::GamePhase;
-
 mod objects;
-
+mod scoring;
 mod ui;
 
 // This is the plugin that attaches gameplay
@@ -60,6 +58,7 @@ impl<GameplaySet: SystemSet + Copy, State: States + Copy> Plugin
                     gravity: Vec2::ZERO,
                     ..Default::default()
                 })
+                .init_resource::<Over>()
                 .add_plugins(RapierPhysicsPlugin::<()>::default());
         }
 
@@ -68,20 +67,25 @@ impl<GameplaySet: SystemSet + Copy, State: States + Copy> Plugin
             // TODO make this happen on a trigger
             .add_systems(
                 OnEnter(self.startup_state),
-                (gameplay::spawn_scene, apply_deferred, ui::spawn_scoreboard)
+                (
+                    gameplay::spawn_scene,
+                    apply_deferred,
+                    (ui::spawn_scoreboard, ui::spawn_over_tracker),
+                )
                     .chain()
                     .in_set(self.set),
             )
             .add_systems(
-                OnEnter(GamePhase::Pitching),
+                OnEnter(gameplay::GamePhase::Pitching),
                 gameplay::ready_pitching_phase.in_set(self.set),
             )
             .add_systems(
                 Update,
                 (
                     gameplay::consume_actions,
-                    gameplay::register_goals.run_if(in_state(GamePhase::Active)),
+                    scoring::register_goals.run_if(in_state(gameplay::GamePhase::Active)),
                     ui::update_scoreboard,
+                    ui::update_over_tracker,
                 )
                     .in_set(self.set),
             );

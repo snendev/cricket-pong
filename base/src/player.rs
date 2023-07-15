@@ -26,13 +26,24 @@ impl TryFrom<u8> for Identity {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Objective {
-    Fielding,
-    Batting,
+#[derive(Clone, Copy, Debug, PartialEq, Component)]
+pub enum Position {
+    Fielder,
+    Batter,
 }
 
-impl Display for Objective {
+impl std::ops::Not for Position {
+    type Output = Position;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Position::Fielder => Position::Batter,
+            Position::Batter => Position::Fielder,
+        }
+    }
+}
+
+impl Display for Position {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -41,16 +52,11 @@ impl Display for Objective {
 #[derive(Component)]
 pub struct Player {
     pub score: u16,
-    pub objective: Objective,
     pub id: Identity,
 }
 
 impl Player {
-    pub fn new(objective: Objective, id: Identity) -> Self {
-        Player {
-            score: 0,
-            objective,
-            id,
-        }
+    pub fn new(id: Identity) -> Self {
+        Player { score: 0, id }
     }
 }

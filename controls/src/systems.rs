@@ -1,10 +1,16 @@
-use bevy::prelude::{Query, ResMut};
+use bevy::prelude::{Changed, Commands, Entity, Query, ResMut};
 
-use leafwing_input_manager::prelude::ActionState;
+use leafwing_input_manager::{prelude::ActionState, InputManagerBundle};
 
-use cricket_pong_game::actions::{Action, Actions};
+use cricket_pong_game::{
+    actions::{Action, Actions},
+    base::{Identity, Player, Position},
+};
 
-use crate::{BatterControl, FielderControl};
+use crate::{
+    BatterControl, BatterControllerBundle, BatterControllerBundle2, FielderControl,
+    FielderControllerBundle, FielderControllerBundle2,
+};
 
 pub(crate) fn queue_inputs(
     batter_query: Query<&ActionState<BatterControl>>,
@@ -26,5 +32,36 @@ pub(crate) fn queue_inputs(
                 .into_iter()
                 .map(|action| Action::Fielder(action.into())),
         );
+    }
+}
+
+pub(crate) fn sync_controllers(
+    mut commands: Commands,
+    players_query: Query<(Entity, &Player, &Position), Changed<Position>>,
+) {
+    for (entity, player, position) in players_query.iter() {
+        let mut builder = commands.entity(entity);
+        match (*position, player.id) {
+            (Position::Fielder, Identity::One) => {
+                builder
+                    .remove::<InputManagerBundle<BatterControl>>()
+                    .insert(FielderControllerBundle::new());
+            }
+            (Position::Fielder, Identity::Two) => {
+                builder
+                    .remove::<InputManagerBundle<BatterControl>>()
+                    .insert(FielderControllerBundle2::new());
+            }
+            (Position::Batter, Identity::One) => {
+                builder
+                    .remove::<InputManagerBundle<FielderControl>>()
+                    .insert(BatterControllerBundle::new());
+            }
+            (Position::Batter, Identity::Two) => {
+                builder
+                    .remove::<InputManagerBundle<FielderControl>>()
+                    .insert(BatterControllerBundle2::new());
+            }
+        };
     }
 }

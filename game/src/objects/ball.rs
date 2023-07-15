@@ -2,7 +2,7 @@ use bevy_ecs::prelude::Bundle;
 use bevy_transform::prelude::Transform;
 
 use bevy_rapier2d::prelude::{
-    Collider, ColliderMassProperties, ExternalImpulse, RigidBody, Velocity,
+    ActiveEvents, Collider, ColliderMassProperties, ExternalImpulse, RigidBody, Velocity,
 };
 
 use cricket_pong_base::ball::Ball;
@@ -16,6 +16,7 @@ pub struct BallBundle {
     collider: Collider,
     mass: ColliderMassProperties,
     impulse: ExternalImpulse,
+    events: ActiveEvents,
 }
 
 impl BallBundle {
@@ -28,6 +29,7 @@ impl BallBundle {
             collider: Collider::ball(Ball::RADIUS),
             mass: ColliderMassProperties::Mass(5.),
             impulse: ExternalImpulse::default(),
+            events: ActiveEvents::COLLISION_EVENTS,
         }
     }
 }

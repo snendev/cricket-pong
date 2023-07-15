@@ -1,8 +1,5 @@
-use bevy_ecs::{
-    prelude::{
-        Commands, Entity, EventReader, NextState, Query, Res, ResMut, State, States, With, Without,
-    },
-    system::Local,
+use bevy_ecs::prelude::{
+    Commands, Entity, NextState, Query, Res, ResMut, State, States, With, Without,
 };
 use bevy_hierarchy::prelude::BuildChildren;
 use bevy_log::prelude::info;
@@ -10,16 +7,12 @@ use bevy_math::prelude::Vec2;
 use bevy_time::prelude::Time;
 use bevy_transform::prelude::{GlobalTransform, Transform};
 
-use bevy_rapier2d::{
-    prelude::{CollisionEvent, ExternalImpulse, Velocity},
-    rapier::prelude::CollisionEventFlags,
-};
+use bevy_rapier2d::prelude::{ExternalImpulse, Velocity};
 
 use cricket_pong_base::{
     ball::Ball,
-    batter::{Batter, Wicket},
-    fielder::{Boundary, Fielder, FielderPosition, FielderRing},
-    Objective, Player,
+    batter::Batter,
+    fielder::{Fielder, FielderPosition, FielderRing},
 };
 
 use crate::{
@@ -151,77 +144,6 @@ pub(crate) fn consume_actions(
                         bat.swing_timer = Some(Batter::SWING_TIME);
                         velocity.angvel = angular_velocity;
                     }
-                }
-            }
-        }
-    }
-}
-
-pub(crate) fn register_goals(
-    mut collision_events: EventReader<CollisionEvent>,
-    mut player_query: Query<&mut Player>,
-    ball_query: Query<&Ball>,
-    wicket_query: Query<&Wicket>,
-    boundary_query: Query<&Boundary>,
-    fielder_query: Query<&Fielder>,
-    mut state: ResMut<NextState<GamePhase>>,
-    mut pass_count: Local<u8>,
-) {
-    for event in collision_events.iter() {
-        // score 1 for batter if the ball goes outside the boundary
-        if let CollisionEvent::Stopped(entity1, entity2, flags) = event {
-            if flags.contains(CollisionEventFlags::REMOVED) {
-                continue;
-            };
-            let other_entity = if ball_query.contains(*entity1) {
-                *entity2
-            } else if ball_query.contains(*entity2) {
-                *entity1
-            } else {
-                continue;
-            };
-            if boundary_query.contains(other_entity) {
-                for mut player in player_query.iter_mut() {
-                    if player.objective == Objective::Batting {
-                        player.score += 1;
-                        info!("Score for batter: {}!", player.score);
-                    }
-                }
-                *pass_count = 0;
-                state.set(GamePhase::Pitching);
-            }
-        }
-        if let CollisionEvent::Started(entity1, entity2, _flags) = event {
-            let other_entity = if ball_query.contains(*entity1) {
-                *entity2
-            } else if ball_query.contains(*entity2) {
-                *entity1
-            } else {
-                continue;
-            };
-            // score 3 for fielder if the ball hits the wicket
-            if wicket_query.contains(other_entity) {
-                for mut player in player_query.iter_mut() {
-                    if player.objective == Objective::Fielding {
-                        player.score += 3;
-                        info!("Score for fielder: {}!", player.score);
-                    }
-                }
-                *pass_count = 0;
-                state.set(GamePhase::Pitching);
-            }
-            // score 1 for fielder if the ball is passed between paddles 4 times
-            if fielder_query.contains(other_entity) {
-                *pass_count += 1;
-                if *pass_count >= 4 {
-                    for mut player in player_query.iter_mut() {
-                        if player.objective == Objective::Fielding {
-                            player.score += 1;
-                            info!("Score for fielder: {}!", player.score);
-                        }
-                    }
-                    *pass_count = 0;
-                    state.set(GamePhase::Pitching);
                 }
             }
         }

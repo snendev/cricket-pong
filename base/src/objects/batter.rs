@@ -16,7 +16,7 @@ impl Batter {
 pub struct Bat;
 
 impl Bat {
-    pub const HWIDTH: f32 = 30.;
+    pub const HWIDTH: f32 = 25.;
     pub const HDEPTH: f32 = 5.;
 }
 

@@ -4,8 +4,8 @@ use bevy_render::prelude::SpatialBundle;
 use bevy_transform::prelude::Transform;
 
 use bevy_rapier2d::prelude::{
-    ActiveEvents, AdditionalMassProperties, CoefficientCombineRule, Collider,
-    ColliderMassProperties, ExternalImpulse, Restitution, RigidBody, Sensor, Velocity,
+    AdditionalMassProperties, CoefficientCombineRule, Collider, ColliderMassProperties,
+    ExternalImpulse, Restitution, RigidBody, Sensor, Velocity,
 };
 
 use cricket_pong_base::fielder::{Boundary, Fielder, FielderRing};
@@ -115,7 +115,6 @@ struct BoundaryBundle {
     spatial: SpatialBundle,
     collider: Collider,
     sensor: Sensor,
-    events: ActiveEvents,
 }
 
 impl BoundaryBundle {
@@ -125,7 +124,6 @@ impl BoundaryBundle {
             spatial: SpatialBundle::default(),
             collider: Collider::ball(Boundary::RADIUS),
             sensor: Sensor,
-            events: ActiveEvents::COLLISION_EVENTS,
         }
     }
 }

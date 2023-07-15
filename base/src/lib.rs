@@ -2,4 +2,4 @@ mod objects;
 pub use objects::{ball, batter, fielder};
 
 mod player;
-pub use player::{Identity, Objective, Player};
+pub use player::{Identity, Player, Position};

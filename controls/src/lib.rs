@@ -32,6 +32,11 @@ impl Plugin for PlayerControllerPlugin {
         ))
         .init_resource::<Actions>()
         .configure_set(PreUpdate, PlayerControllerSet.after(BevyInputSet))
-        .add_systems(PreUpdate, systems::queue_inputs.in_set(PlayerControllerSet));
+        .add_systems(
+            PreUpdate,
+            (systems::sync_controllers, systems::queue_inputs)
+                .chain()
+                .in_set(PlayerControllerSet),
+        );
     }
 }

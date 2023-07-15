@@ -3,9 +3,7 @@ use bevy_hierarchy::prelude::BuildChildren;
 use bevy_render::prelude::SpatialBundle;
 use bevy_transform::prelude::Transform;
 
-use bevy_rapier2d::prelude::{
-    ActiveEvents, Collider, ColliderMassProperties, RigidBody, Sensor, Velocity,
-};
+use bevy_rapier2d::prelude::{Collider, ColliderMassProperties, RigidBody, Sensor, Velocity};
 
 use cricket_pong_base::batter::{Bat, Batter, Wicket};
 
@@ -58,7 +56,6 @@ struct WicketBundle {
     spatial: SpatialBundle,
     collider: Collider,
     sensor: Sensor,
-    events: ActiveEvents,
 }
 
 impl WicketBundle {
@@ -68,7 +65,6 @@ impl WicketBundle {
             spatial: SpatialBundle::default(),
             collider: Collider::ball(Wicket::RADIUS),
             sensor: Sensor,
-            events: ActiveEvents::COLLISION_EVENTS,
         }
     }
 }

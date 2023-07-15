@@ -7,11 +7,9 @@ use bevy::{
 };
 
 // use cricket_pong_bots::BotControllerPlugin;
-use cricket_pong_controls::{
-    BatterControllerBundle2, FielderControllerBundle, PlayerControllerPlugin,
-};
+use cricket_pong_controls::PlayerControllerPlugin;
 use cricket_pong_game::{
-    base::{Objective, Player},
+    base::{Player, Position},
     GameplayPlugin,
 };
 use cricket_pong_graphics::GraphicsPlugin;
@@ -36,14 +34,8 @@ enum AppScreen {
 }
 
 fn spawn_local_players(mut commands: Commands) {
-    commands.spawn((
-        Player::new(Objective::Fielding, 1.try_into().unwrap()),
-        FielderControllerBundle::new(),
-    ));
-    commands.spawn((
-        Player::new(Objective::Batting, 2.try_into().unwrap()),
-        BatterControllerBundle2::new(),
-    ));
+    commands.spawn((Position::Batter, Player::new(1.try_into().unwrap())));
+    commands.spawn((Position::Fielder, Player::new(2.try_into().unwrap())));
 }
 
 pub fn run_app(canvas: Option<String>) {
