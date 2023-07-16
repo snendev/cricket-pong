@@ -103,9 +103,9 @@ pub(crate) fn register_goals(
                 score_points(3, Position::Fielder);
                 *pass_count = 0;
             } else if fielder_query.contains(other_entity) {
-                // score 1 for fielder if the ball is passed between paddles 3 times
+                // score 1 for fielder if the ball is passed between paddles 5 times
                 *pass_count += 1;
-                if *pass_count >= 3 {
+                if *pass_count >= 5 {
                     score_points(1, Position::Fielder);
                     *pass_count = 0;
                 }
