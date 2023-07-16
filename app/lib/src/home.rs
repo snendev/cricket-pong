@@ -14,15 +14,9 @@ fn home_menu(mut egui_ctx: EguiContexts, mut screen_state: ResMut<NextState<AppS
             ui.set_width(200.);
             ui.vertical_centered(|ui| {
                 ui.allocate_ui(Vec2::new(200., 80.), |ui| {
-                    // if ui.button("Play against AI").clicked() {
-                    //     screen_state.set(AppScreen::AIGame);
-                    // }
                     if ui.button("Play Locally").clicked() {
                         screen_state.set(AppScreen::LocalGame);
                     }
-                    // if ui.button("Play Online").clicked() {
-                    //     screen_state.set(AppScreen::OnlineGame);
-                    // }
                 });
             });
         });

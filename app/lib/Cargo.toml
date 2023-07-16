@@ -7,7 +7,6 @@ license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
-# cricket_pong_bots = { path = "../../bots" }
 cricket_pong_controls = { path = "../../controls" }
 cricket_pong_game = { path = "../../game" }
 cricket_pong_graphics = { path = "../../graphics" }

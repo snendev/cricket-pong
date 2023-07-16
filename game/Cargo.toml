@@ -21,7 +21,6 @@ bevy_ui = { version = "0.11" }
 bevy_rapier2d = { version = "0.22" }
 
 [dev-dependencies]
-# cricket_pong_bots = { path = "../bots" }
 cricket_pong_controls = { path = "../controls" }
 cricket_pong_graphics = { path = "../graphics" }
 bevy_geppetto = { git = "https://github.com/snendev/bevy_geppetto.git" }

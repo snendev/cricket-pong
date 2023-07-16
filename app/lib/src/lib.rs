@@ -20,17 +20,15 @@ mod home;
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
 pub struct LocalGameplaySet;
 
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
-pub struct OnlineGameplaySet;
-
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, States)]
 enum AppScreen {
     Splash,
     #[default]
     MainMenu,
-    // AIGame,
     LocalGame,
-    OnlineGame,
+    // ** TODO:
+    // AIGame,
+    // OnlineGame,
 }
 
 fn spawn_local_players(mut commands: Commands) {
@@ -53,19 +51,8 @@ pub fn run_app(canvas: Option<String>) {
             Update,
             LocalGameplaySet.run_if(in_state(AppScreen::LocalGame)),
         )
-        .configure_set(
-            Update,
-            OnlineGameplaySet.run_if(in_state(AppScreen::OnlineGame)),
-        )
-        .add_plugins((
-            GameplayPlugin::new(LocalGameplaySet, AppScreen::LocalGame),
-            // GameplayPlugin::new(OnlineGameplaySet, AppScreen::OnlineGame),
-        ))
-        .add_plugins((
-            PlayerControllerPlugin,
-            // BotControllerPlugin,
-            GraphicsPlugin,
-        ))
+        .add_plugins((GameplayPlugin::new(LocalGameplaySet, AppScreen::LocalGame),))
+        .add_plugins((PlayerControllerPlugin, GraphicsPlugin))
         .add_systems(OnEnter(AppScreen::LocalGame), spawn_local_players)
         .run();
 }
