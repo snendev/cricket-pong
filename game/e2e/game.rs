@@ -7,7 +7,6 @@ use bevy_geppetto::Test;
 use bevy_rapier2d::render::RapierDebugRenderPlugin;
 
 use cricket_pong_base::{Player, Position};
-// use cricket_pong_bots::{BatterBotBundle, BotControllerPlugin};
 use cricket_pong_controls::{
     BatterControllerBundle2, FielderControllerBundle, PlayerControllerPlugin,
 };
@@ -46,7 +45,6 @@ fn main() {
                     GraphicsPlugin,
                     GameplayPlugin::new(GameplaySet, GameplayState::Test),
                     PlayerControllerPlugin,
-                    // BotControllerPlugin,
                 ))
                 .add_systems(Startup, spawn_players);
         },
