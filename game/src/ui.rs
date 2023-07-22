@@ -117,7 +117,7 @@ pub(crate) fn update_scoreboard(
 }
 
 #[derive(Component)]
-pub(crate) struct PitchTracker {
+pub(crate) struct BowlTracker {
     pub index: usize,
     pub style: TextStyle,
     pub parent: Entity,
@@ -159,7 +159,7 @@ pub(crate) fn spawn_over_tracker(mut commands: Commands) {
                     })
                     .with_children(|parent| {
                         parent.spawn((
-                            PitchTracker {
+                            BowlTracker {
                                 index,
                                 style: text_style.clone(),
                                 parent: parent.parent_entity(),
@@ -173,20 +173,20 @@ pub(crate) fn spawn_over_tracker(mut commands: Commands) {
 
 pub(crate) fn update_over_tracker(
     mut container_query: Query<&mut BackgroundColor>,
-    mut text_node_query: Query<(&PitchTracker, &mut Text)>,
+    mut text_node_query: Query<(&BowlTracker, &mut Text)>,
     over: Res<Over>,
 ) {
-    for (pitch_tracker, mut text) in text_node_query.iter_mut() {
-        let Ok(mut container_style) = container_query.get_mut(pitch_tracker.parent) else { continue };
-        let pitch = over.get(pitch_tracker.index);
-        if let Some(pitch) = pitch {
-            *text = Text::from_section(pitch.value.to_string(), pitch_tracker.style.clone());
-            container_style.0 = match pitch.scorer {
+    for (bowl_tracker, mut text) in text_node_query.iter_mut() {
+        let Ok(mut container_style) = container_query.get_mut(bowl_tracker.parent) else { continue };
+        let score = over.get(bowl_tracker.index);
+        if let Some(score) = score {
+            *text = Text::from_section(score.value.to_string(), bowl_tracker.style.clone());
+            container_style.0 = match score.scorer {
                 Position::Fielder => Color::LIME_GREEN,
                 Position::Batter => Color::CYAN,
             };
         } else {
-            *text = Text::from_section("", pitch_tracker.style.clone());
+            *text = Text::from_section("", bowl_tracker.style.clone());
             container_style.0 = Color::WHITE;
         }
     }

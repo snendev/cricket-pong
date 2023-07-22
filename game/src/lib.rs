@@ -76,8 +76,8 @@ impl<GameplaySet: SystemSet + Copy, State: States + Copy> Plugin
                     .in_set(self.set),
             )
             .add_systems(
-                OnEnter(gameplay::GamePhase::Pitching),
-                gameplay::ready_pitching_phase.in_set(self.set),
+                OnEnter(gameplay::GamePhase::Bowling),
+                gameplay::ready_bowling_phase.in_set(self.set),
             )
             .add_systems(
                 Update,

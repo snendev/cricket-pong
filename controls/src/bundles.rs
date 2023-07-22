@@ -58,7 +58,7 @@ pub struct FielderControllerBundle {
 impl FielderControllerBundle {
     pub fn new() -> Self {
         let input_map = InputMap::new([
-            (KeyCode::Space, FielderControl::Pitch),
+            (KeyCode::Space, FielderControl::Bowl),
             (KeyCode::Q, FielderControl::MoveOutfieldCCW),
             (KeyCode::W, FielderControl::MoveOutfieldCW),
             (KeyCode::A, FielderControl::MoveInfieldCCW),
@@ -82,7 +82,7 @@ pub struct FielderControllerBundle2 {
 impl FielderControllerBundle2 {
     pub fn new() -> Self {
         let input_map = InputMap::new([
-            (KeyCode::ShiftRight, FielderControl::Pitch),
+            (KeyCode::ShiftRight, FielderControl::Bowl),
             (KeyCode::U, FielderControl::MoveOutfieldCCW),
             (KeyCode::I, FielderControl::MoveOutfieldCW),
             (KeyCode::J, FielderControl::MoveInfieldCCW),

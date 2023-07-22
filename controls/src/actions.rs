@@ -24,7 +24,7 @@ impl From<BatterControl> for BatterAction {
 
 #[derive(Actionlike, Reflect, Clone, Copy, Debug)]
 pub enum FielderControl {
-    Pitch,
+    Bowl,
     MoveInfieldCW,
     MoveInfieldCCW,
     MoveOutfieldCW,
@@ -34,7 +34,7 @@ pub enum FielderControl {
 impl From<FielderControl> for FielderAction {
     fn from(control: FielderControl) -> Self {
         match control {
-            FielderControl::Pitch => FielderAction::Pitch,
+            FielderControl::Bowl => FielderAction::Bowl,
             FielderControl::MoveInfieldCW => FielderAction::MoveInfieldCW,
             FielderControl::MoveInfieldCCW => FielderAction::MoveInfieldCCW,
             FielderControl::MoveOutfieldCW => FielderAction::MoveOutfieldCW,

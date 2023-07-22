@@ -11,34 +11,34 @@ use cricket_pong_base::{
 
 use crate::gameplay::GamePhase;
 
-pub(crate) struct PitchScore {
+pub(crate) struct BowlScore {
     pub scorer: Position,
     pub value: u16,
 }
 
 // AKA an "inning"
 #[derive(Resource, Default)]
-pub(crate) struct Over(Vec<PitchScore>);
+pub(crate) struct Over(Vec<BowlScore>);
 
-pub(crate) enum PitchResult {
+pub(crate) enum BowlResult {
     None,
     ChangePositions,
 }
 
 impl Over {
-    pub(crate) fn get(&self, index: usize) -> Option<&PitchScore> {
+    pub(crate) fn get(&self, index: usize) -> Option<&BowlScore> {
         self.0.get(index)
     }
 
-    pub(crate) fn push(&mut self, pitch: PitchScore) -> PitchResult {
+    pub(crate) fn push(&mut self, score: BowlScore) -> BowlResult {
         if self.0.len() == 6 {
             self.0.clear();
         }
-        self.0.push(pitch);
+        self.0.push(score);
         if self.0.len() == 6 {
-            PitchResult::ChangePositions
+            BowlResult::ChangePositions
         } else {
-            PitchResult::None
+            BowlResult::None
         }
     }
 }
@@ -55,7 +55,7 @@ pub(crate) fn register_goals(
     mut pass_count: Local<u8>,
 ) {
     let mut score_points = |scored_points: u16, scoring_position: Position| {
-        let pitch_result = over.push(PitchScore {
+        let bowl_result = over.push(BowlScore {
             scorer: scoring_position,
             value: scored_points,
         });
@@ -63,14 +63,14 @@ pub(crate) fn register_goals(
             if *position == scoring_position {
                 player.score += scored_points;
             }
-            match pitch_result {
-                PitchResult::None => {}
-                PitchResult::ChangePositions => {
+            match bowl_result {
+                BowlResult::None => {}
+                BowlResult::ChangePositions => {
                     *position = !*position;
                 }
             }
         }
-        state.set(GamePhase::Pitching);
+        state.set(GamePhase::Bowling);
     };
     for event in collision_events.iter() {
         // score 1 for batter if the ball goes outside the boundary

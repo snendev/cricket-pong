@@ -19,7 +19,7 @@ impl BatterAction {
 
 #[derive(Clone, Copy, Debug)]
 pub enum FielderAction {
-    Pitch,
+    Bowl,
     MoveInfieldCW,
     MoveInfieldCCW,
     MoveOutfieldCW,

@@ -34,7 +34,7 @@ pub struct Fielder {
 
 impl Fielder {
     pub const ROTATION_SPEED: f32 = std::f32::consts::FRAC_PI_4;
-    pub const PITCH_IMPULSE: f32 = 1000.;
+    pub const BOWL_IMPULSE: f32 = 1000.;
     pub const INFIELD_HWIDTH: f32 = 30.;
     pub const OUTFIELD_HWIDTH: f32 = 50.;
     pub const HDEPTH: f32 = 2.;

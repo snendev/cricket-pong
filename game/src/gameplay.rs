@@ -24,7 +24,7 @@ use crate::{
 pub(crate) enum GamePhase {
     #[default]
     Inactive,
-    Pitching,
+    Bowling,
     Active,
 }
 
@@ -33,10 +33,10 @@ pub(crate) fn spawn_scene(mut commands: Commands, mut state: ResMut<NextState<Ga
     commands.spawn(BallBundle::new(Transform::from_xyz(0., 0., 1.)));
     FieldersSpawner::spawn(&mut commands);
     BatterSpawner::spawn(&mut commands);
-    state.set(GamePhase::Pitching);
+    state.set(GamePhase::Bowling);
 }
 
-pub(crate) fn ready_pitching_phase(
+pub(crate) fn ready_bowling_phase(
     mut commands: Commands,
     mut ball_query: Query<(Entity, &mut Transform, &mut Velocity), With<Ball>>,
     fielders_query: Query<(Entity, &Fielder)>,
@@ -91,8 +91,8 @@ pub(crate) fn consume_actions(
     }
     for action in actions.0.drain(..) {
         match action {
-            Action::Fielder(FielderAction::Pitch) => {
-                if *state != GamePhase::Pitching || next_state.0.is_some() {
+            Action::Fielder(FielderAction::Bowl) => {
+                if *state != GamePhase::Bowling || next_state.0.is_some() {
                     continue;
                 };
                 let Ok((ball, mut impulse, mut transform, global_transform)) = ball_query.get_single_mut() else { continue };
@@ -104,7 +104,7 @@ pub(crate) fn consume_actions(
                 transform.translation.y = origin.y;
                 commands.entity(ball).remove_parent();
                 let direction_vector = (-origin).normalize();
-                impulse.impulse += direction_vector * Fielder::PITCH_IMPULSE;
+                impulse.impulse += direction_vector * Fielder::BOWL_IMPULSE;
                 next_state.set(GamePhase::Active);
             }
             Action::Fielder(movement) => {
