@@ -9,8 +9,8 @@ use bevy::{
 // use cricket_pong_bots::BotControllerPlugin;
 use cricket_pong_controls::PlayerControllerPlugin;
 use cricket_pong_game::{
-    base::{Player, Position},
-    GameplayPlugin,
+    base::{PlayerOne, PlayerTwo, Position, Score},
+    GamePhase, GameplayPlugin,
 };
 use cricket_pong_graphics::GraphicsPlugin;
 use home::HomeScreenPlugin;
@@ -32,8 +32,8 @@ enum AppScreen {
 }
 
 fn spawn_local_players(mut commands: Commands) {
-    commands.spawn((Position::Batter, Player::new(1.try_into().unwrap())));
-    commands.spawn((Position::Fielder, Player::new(2.try_into().unwrap())));
+    commands.spawn((Position::Batter, PlayerOne, Score(0)));
+    commands.spawn((Position::Fielder, PlayerTwo, Score(0)));
 }
 
 pub fn run_app(canvas: Option<String>) {
@@ -51,8 +51,15 @@ pub fn run_app(canvas: Option<String>) {
             Update,
             LocalGameplaySet.run_if(in_state(AppScreen::LocalGame)),
         )
-        .add_plugins((GameplayPlugin::new(LocalGameplaySet, AppScreen::LocalGame),))
-        .add_plugins((PlayerControllerPlugin, GraphicsPlugin))
+        .add_plugins(GameplayPlugin::new(LocalGameplaySet, AppScreen::LocalGame))
+        .add_plugins((
+            PlayerControllerPlugin,
+            GraphicsPlugin::new(
+                AppScreen::LocalGame,
+                AppScreen::MainMenu,
+                GamePhase::GameOver,
+            ),
+        ))
         .add_systems(OnEnter(AppScreen::LocalGame), spawn_local_players)
         .run();
 }

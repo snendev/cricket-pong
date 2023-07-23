@@ -28,6 +28,6 @@ pub struct HomeScreenPlugin;
 impl Plugin for HomeScreenPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(EguiPlugin)
-            .add_systems(Update, (home_menu.run_if(in_state(AppScreen::MainMenu)),));
+            .add_systems(Update, home_menu.run_if(in_state(AppScreen::MainMenu)));
     }
 }

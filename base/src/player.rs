@@ -50,13 +50,10 @@ impl Display for Position {
 }
 
 #[derive(Component)]
-pub struct Player {
-    pub score: u16,
-    pub id: Identity,
-}
+pub struct Score(pub u16);
 
-impl Player {
-    pub fn new(id: Identity) -> Self {
-        Player { score: 0, id }
-    }
-}
+#[derive(Component)]
+pub struct PlayerOne;
+
+#[derive(Component)]
+pub struct PlayerTwo;

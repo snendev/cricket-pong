@@ -1,6 +1,8 @@
 use bevy::{
     input::InputSystem as BevyInputSet,
-    prelude::{App, IntoSystemConfigs, IntoSystemSetConfig, Plugin, PreUpdate, SystemSet},
+    prelude::{
+        apply_deferred, App, IntoSystemConfigs, IntoSystemSetConfig, Plugin, PreUpdate, SystemSet,
+    },
 };
 
 use leafwing_input_manager::prelude::InputManagerPlugin;
@@ -34,7 +36,11 @@ impl Plugin for PlayerControllerPlugin {
         .configure_set(PreUpdate, PlayerControllerSet.after(BevyInputSet))
         .add_systems(
             PreUpdate,
-            (systems::sync_controllers, systems::queue_inputs)
+            (
+                systems::sync_controllers,
+                apply_deferred,
+                systems::queue_inputs,
+            )
                 .chain()
                 .in_set(PlayerControllerSet),
         );

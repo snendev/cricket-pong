@@ -1,10 +1,10 @@
-use bevy::prelude::{Changed, Commands, Entity, Query, ResMut};
+use bevy::prelude::{Changed, Commands, Entity, Query, ResMut, With, Without};
 
 use leafwing_input_manager::{prelude::ActionState, InputManagerBundle};
 
 use cricket_pong_game::{
     actions::{Action, Actions},
-    base::{Identity, Player, Position},
+    base::{PlayerOne, PlayerTwo, Position},
 };
 
 use crate::{
@@ -37,27 +37,39 @@ pub(crate) fn queue_inputs(
 
 pub(crate) fn sync_controllers(
     mut commands: Commands,
-    players_query: Query<(Entity, &Player, &Position), Changed<Position>>,
+    player_one_query: Query<
+        (Entity, &Position),
+        (With<PlayerOne>, Without<PlayerTwo>, Changed<Position>),
+    >,
+    player_two_query: Query<
+        (Entity, &Position),
+        (With<PlayerTwo>, Without<PlayerOne>, Changed<Position>),
+    >,
 ) {
-    for (entity, player, position) in players_query.iter() {
+    for (entity, position) in player_one_query.iter() {
         let mut builder = commands.entity(entity);
-        match (*position, player.id) {
-            (Position::Fielder, Identity::One) => {
+        match *position {
+            Position::Fielder => {
                 builder
                     .remove::<InputManagerBundle<BatterControl>>()
                     .insert(FielderControllerBundle::new());
             }
-            (Position::Fielder, Identity::Two) => {
-                builder
-                    .remove::<InputManagerBundle<BatterControl>>()
-                    .insert(FielderControllerBundle2::new());
-            }
-            (Position::Batter, Identity::One) => {
+            Position::Batter => {
                 builder
                     .remove::<InputManagerBundle<FielderControl>>()
                     .insert(BatterControllerBundle::new());
             }
-            (Position::Batter, Identity::Two) => {
+        };
+    }
+    for (entity, position) in player_two_query.iter() {
+        let mut builder = commands.entity(entity);
+        match *position {
+            Position::Fielder => {
+                builder
+                    .remove::<InputManagerBundle<BatterControl>>()
+                    .insert(FielderControllerBundle2::new());
+            }
+            Position::Batter => {
                 builder
                     .remove::<InputManagerBundle<FielderControl>>()
                     .insert(BatterControllerBundle2::new());

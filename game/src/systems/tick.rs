@@ -1,8 +1,5 @@
-use bevy_ecs::prelude::{
-    Commands, Entity, NextState, Query, Res, ResMut, State, States, With, Without,
-};
+use bevy_ecs::prelude::{Commands, Entity, NextState, Query, Res, ResMut, State, With, Without};
 use bevy_hierarchy::prelude::BuildChildren;
-use bevy_log::prelude::info;
 use bevy_math::prelude::Vec2;
 use bevy_time::prelude::Time;
 use bevy_transform::prelude::{GlobalTransform, Transform};
@@ -17,29 +14,14 @@ use cricket_pong_base::{
 
 use crate::{
     actions::{Action, Actions, BatterAction, FielderAction},
-    objects::{ball::BallBundle, batter::BatterSpawner, field::FieldersSpawner},
+    GamePhase,
 };
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, States)]
-pub(crate) enum GamePhase {
-    #[default]
-    Inactive,
-    Bowling,
-    Active,
-}
-
-pub(crate) fn spawn_scene(mut commands: Commands, mut state: ResMut<NextState<GamePhase>>) {
-    info!("Startup game");
-    commands.spawn(BallBundle::new(Transform::from_xyz(0., 0., 1.)));
-    FieldersSpawner::spawn(&mut commands);
-    BatterSpawner::spawn(&mut commands);
-    state.set(GamePhase::Bowling);
-}
 
 pub(crate) fn ready_bowling_phase(
     mut commands: Commands,
     mut ball_query: Query<(Entity, &mut Transform, &mut Velocity), With<Ball>>,
     fielders_query: Query<(Entity, &Fielder)>,
+    mut state: ResMut<NextState<GamePhase>>,
 ) {
     let Ok((ball, mut transform, mut velocity)) = ball_query.get_single_mut() else { return };
     if let Some(fielder) = fielders_query.iter().find_map(|(entity, fielder)| {
@@ -53,6 +35,7 @@ pub(crate) fn ready_bowling_phase(
         transform.translation.x = 0.;
         transform.translation.y = -(Fielder::HDEPTH + Ball::RADIUS);
         *velocity = Velocity::zero();
+        state.set(GamePhase::Bowling);
     }
 }
 

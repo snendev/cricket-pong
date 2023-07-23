@@ -1,4 +1,7 @@
-use bevy_ecs::prelude::{EventReader, Local, NextState, Query, ResMut, Resource};
+use bevy_ecs::{
+    prelude::{EventReader, Local, NextState, Query, ResMut},
+    query::{With, Without},
+};
 
 use bevy_rapier2d::{prelude::CollisionEvent, rapier::prelude::CollisionEventFlags};
 
@@ -6,46 +9,15 @@ use cricket_pong_base::{
     ball::Ball,
     batter::Wicket,
     fielder::{Boundary, Fielder},
-    Player, Position,
+    BowlResult, BowlScore, Identity, Over, PlayerOne, PlayerTwo, Position, Score,
 };
 
-use crate::gameplay::GamePhase;
-
-pub(crate) struct BowlScore {
-    pub scorer: Position,
-    pub value: u16,
-}
-
-// AKA an "inning"
-#[derive(Resource, Default)]
-pub(crate) struct Over(Vec<BowlScore>);
-
-pub(crate) enum BowlResult {
-    None,
-    ChangePositions,
-}
-
-impl Over {
-    pub(crate) fn get(&self, index: usize) -> Option<&BowlScore> {
-        self.0.get(index)
-    }
-
-    pub(crate) fn push(&mut self, score: BowlScore) -> BowlResult {
-        if self.0.len() == 6 {
-            self.0.clear();
-        }
-        self.0.push(score);
-        if self.0.len() == 6 {
-            BowlResult::ChangePositions
-        } else {
-            BowlResult::None
-        }
-    }
-}
+use crate::GamePhase;
 
 pub(crate) fn register_goals(
     mut collision_events: EventReader<CollisionEvent>,
-    mut player_query: Query<(&mut Player, &mut Position)>,
+    mut player_one_query: Query<(&mut Score, &mut Position), (With<PlayerOne>, Without<PlayerTwo>)>,
+    mut player_two_query: Query<(&mut Score, &mut Position), (With<PlayerTwo>, Without<PlayerOne>)>,
     ball_query: Query<&Ball>,
     wicket_query: Query<&Wicket>,
     boundary_query: Query<&Boundary>,
@@ -54,24 +26,35 @@ pub(crate) fn register_goals(
     mut state: ResMut<NextState<GamePhase>>,
     mut pass_count: Local<u8>,
 ) {
-    let mut score_points = |scored_points: u16, scoring_position: Position| {
+    let mut score_points = move |scored_points: u16, scoring_position: Position| {
+        let (player_one_score, mut player_one_position) = player_one_query.single_mut();
+        let (player_two_score, mut player_two_position) = player_two_query.single_mut();
+        let (mut score, scorer) = if *player_one_position == scoring_position {
+            (player_one_score, Identity::One)
+        } else if *player_two_position == scoring_position {
+            (player_two_score, Identity::Two)
+        } else {
+            return;
+        };
+        score.0 += scored_points;
+
         let bowl_result = over.push(BowlScore {
-            scorer: scoring_position,
+            scorer,
             value: scored_points,
         });
-        for (mut player, mut position) in player_query.iter_mut() {
-            if *position == scoring_position {
-                player.score += scored_points;
+        state.set(GamePhase::Preparing);
+        match bowl_result {
+            BowlResult::None => {}
+            BowlResult::ChangePositions => {
+                *player_one_position = !*player_one_position;
+                *player_two_position = !*player_two_position;
             }
-            match bowl_result {
-                BowlResult::None => {}
-                BowlResult::ChangePositions => {
-                    *position = !*position;
-                }
+            BowlResult::GameOver => {
+                state.set(GamePhase::GameOver);
             }
         }
-        state.set(GamePhase::Bowling);
     };
+
     for event in collision_events.iter() {
         // score 1 for batter if the ball goes outside the boundary
         if let CollisionEvent::Stopped(entity1, entity2, flags) = event {
