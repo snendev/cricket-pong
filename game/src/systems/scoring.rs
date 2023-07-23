@@ -1,7 +1,4 @@
-use bevy_ecs::{
-    prelude::{EventReader, Local, NextState, Query, ResMut},
-    query::{With, Without},
-};
+use bevy_ecs::prelude::{EventReader, Local, NextState, Query, ResMut, With, Without};
 
 use bevy_rapier2d::{prelude::CollisionEvent, rapier::prelude::CollisionEventFlags};
 

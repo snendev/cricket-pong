@@ -1,12 +1,8 @@
-use bevy::{
-    prelude::{
-        in_state, App, Commands, IntoSystemSetConfig, OnEnter, PluginGroup, States, SystemSet,
-        Update, Window, WindowPlugin,
-    },
-    DefaultPlugins,
+use bevy::prelude::{
+    in_state, App, Commands, DefaultPlugins, IntoSystemSetConfig, OnEnter, PluginGroup, States,
+    SystemSet, Update, Window, WindowPlugin,
 };
 
-// use cricket_pong_bots::BotControllerPlugin;
 use cricket_pong_controls::PlayerControllerPlugin;
 use cricket_pong_game::{
     base::{PlayerOne, PlayerTwo, Position, Score},

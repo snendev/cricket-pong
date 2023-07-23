@@ -1,12 +1,9 @@
-use bevy_ecs::{
-    prelude::{Commands, Entity, NextState, Query, ResMut, With},
-    query::Without,
-};
+use bevy_ecs::prelude::{Commands, Entity, NextState, Query, ResMut, With};
 use bevy_transform::prelude::Transform;
 
 use cricket_pong_base::{
     ball::Ball,
-    batter::{Bat, Batter},
+    batter::{Bat, Batter, Wicket},
     fielder::{Boundary, Fielder, FielderRing},
     Over, PlayerOne, PlayerTwo,
 };
@@ -31,11 +28,12 @@ pub(crate) fn despawn_scene(
     boundary_query: Query<Entity, With<Boundary>>,
     fielder_ring_query: Query<Entity, With<Fielder>>,
     fielder_query: Query<Entity, With<FielderRing>>,
+    wicket_query: Query<Entity, With<Wicket>>,
     batter_query: Query<Entity, With<Batter>>,
     bat_query: Query<Entity, With<Bat>>,
     ball_query: Query<Entity, With<Ball>>,
-    player_one_query: Query<Entity, (With<PlayerOne>, Without<PlayerTwo>)>,
-    player_two_query: Query<Entity, (With<PlayerTwo>, Without<PlayerOne>)>,
+    player_one_query: Query<Entity, With<PlayerOne>>,
+    player_two_query: Query<Entity, With<PlayerTwo>>,
 ) {
     for entity in boundary_query.iter() {
         commands.entity(entity).despawn();
@@ -44,6 +42,9 @@ pub(crate) fn despawn_scene(
         commands.entity(entity).despawn();
     }
     for entity in fielder_query.iter() {
+        commands.entity(entity).despawn();
+    }
+    for entity in wicket_query.iter() {
         commands.entity(entity).despawn();
     }
     for entity in batter_query.iter() {
