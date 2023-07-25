@@ -10,14 +10,9 @@ impl Batter {
     pub const ROTATION_SPEED: f32 = std::f32::consts::FRAC_PI_6;
     pub const SWING_VELOCITY: f32 = std::f32::consts::PI * 2.;
     pub const SWING_TIME: f32 = 0.3;
-}
-
-#[derive(Component)]
-pub struct Bat;
-
-impl Bat {
     pub const HWIDTH: f32 = 25.;
     pub const HDEPTH: f32 = 5.;
+    pub const MASS: f32 = 50.;
 }
 
 #[derive(Component)]

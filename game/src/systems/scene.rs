@@ -3,7 +3,7 @@ use bevy_transform::prelude::Transform;
 
 use cricket_pong_base::{
     ball::Ball,
-    batter::{Bat, Batter, Wicket},
+    batter::{Batter, Wicket},
     fielder::{Boundary, Fielder, FielderRing},
     Over, PlayerOne, PlayerTwo,
 };
@@ -26,11 +26,10 @@ pub(crate) fn spawn_scene(mut commands: Commands, mut state: ResMut<NextState<Ga
 pub(crate) fn despawn_scene(
     mut commands: Commands,
     boundary_query: Query<Entity, With<Boundary>>,
-    fielder_ring_query: Query<Entity, With<Fielder>>,
-    fielder_query: Query<Entity, With<FielderRing>>,
+    fielder_query: Query<Entity, With<Fielder>>,
+    fielder_ring_query: Query<Entity, With<FielderRing>>,
     wicket_query: Query<Entity, With<Wicket>>,
     batter_query: Query<Entity, With<Batter>>,
-    bat_query: Query<Entity, With<Bat>>,
     ball_query: Query<Entity, With<Ball>>,
     player_one_query: Query<Entity, With<PlayerOne>>,
     player_two_query: Query<Entity, With<PlayerTwo>>,
@@ -38,19 +37,16 @@ pub(crate) fn despawn_scene(
     for entity in boundary_query.iter() {
         commands.entity(entity).despawn();
     }
-    for entity in fielder_ring_query.iter() {
+    for entity in fielder_query.iter() {
         commands.entity(entity).despawn();
     }
-    for entity in fielder_query.iter() {
+    for entity in fielder_ring_query.iter() {
         commands.entity(entity).despawn();
     }
     for entity in wicket_query.iter() {
         commands.entity(entity).despawn();
     }
     for entity in batter_query.iter() {
-        commands.entity(entity).despawn();
-    }
-    for entity in bat_query.iter() {
         commands.entity(entity).despawn();
     }
     for entity in ball_query.iter() {

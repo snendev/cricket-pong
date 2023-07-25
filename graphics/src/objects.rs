@@ -12,8 +12,8 @@ use bevy_prototype_lyon::prelude::{
 
 use cricket_pong_base::{
     ball::Ball,
-    batter::{Bat, Batter, Wicket},
-    fielder::{Boundary, Fielder, FielderPosition, FielderRing},
+    batter::{Batter, Wicket},
+    fielder::{Boundary, Fielder, FielderRing},
 };
 
 fn setup_ball_shape(
@@ -58,17 +58,11 @@ fn setup_fielder_shape(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for (entity, transform, fielder) in added_fielder_query.iter() {
-        let (box_x, box_y) = match fielder.position {
-            FielderPosition::Top | FielderPosition::Bottom => {
-                (fielder.hwidth() * 2., Fielder::HDEPTH * 2.)
-            }
-            FielderPosition::Left | FielderPosition::Right => {
-                (Fielder::HDEPTH * 2., fielder.hwidth() * 2.)
-            }
-        };
         commands.entity(entity).insert(MaterialMesh2dBundle {
             mesh: meshes
-                .add(shape::Quad::new(Vec2::new(box_x, box_y)).into())
+                .add(
+                    shape::Quad::new(Vec2::new(fielder.hwidth() * 2., Fielder::HDEPTH * 2.)).into(),
+                )
                 .into(),
             material: materials.add(Color::AQUAMARINE.into()),
             transform: *transform,
@@ -96,37 +90,34 @@ fn setup_boundary_shape(
     }
 }
 
-fn setup_batter_shape(mut commands: Commands, added_batter_query: Query<Entity, Added<Batter>>) {
-    for entity in added_batter_query.iter() {
+fn setup_batter_shape(
+    mut commands: Commands,
+    added_batter_query: Query<(Entity, &Transform), Added<Batter>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    for (entity, transform) in added_batter_query.iter() {
         let shape = shapes::Circle {
             radius: Batter::RADIUS,
             ..Default::default()
         };
-        commands.entity(entity).insert((
+        // batter ring
+        commands.spawn((
             ShapeBundle {
                 path: GeometryBuilder::build_as(&shape),
                 ..Default::default()
             },
             Stroke::new(Color::BLACK, 4.),
         ));
-    }
-}
-
-fn setup_bat_shape(
-    mut commands: Commands,
-    added_batter_query: Query<(Entity, &Transform), Added<Bat>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    for (entity, transform) in added_batter_query.iter() {
-        commands.entity(entity).insert(MaterialMesh2dBundle {
+        // bat itself
+        commands.entity(entity).insert((MaterialMesh2dBundle {
             mesh: meshes
-                .add(shape::Quad::new(Vec2::new(Bat::HWIDTH * 2., Bat::HDEPTH * 2.)).into())
+                .add(shape::Quad::new(Vec2::new(Batter::HWIDTH * 2., Batter::HDEPTH * 2.)).into())
                 .into(),
             material: materials.add(Color::rgb(0.59, 0.29, 0.).into()),
             transform: *transform,
             ..Default::default()
-        });
+        },));
     }
 }
 
@@ -162,7 +153,6 @@ impl Plugin for ObjectGraphicsPlugin {
                 setup_fielder_shape,
                 setup_boundary_shape,
                 setup_batter_shape,
-                setup_bat_shape,
                 setup_wicket_shape,
             )
                 .in_set(ObjectGraphicsSet),

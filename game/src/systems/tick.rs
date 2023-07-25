@@ -44,8 +44,8 @@ pub(crate) fn consume_actions(
     mut actions: ResMut<Actions>,
     state: Res<State<GamePhase>>,
     mut next_state: ResMut<NextState<GamePhase>>,
-    mut fielders_query: Query<(&FielderRing, &mut Velocity)>,
-    mut batter_query: Query<(&mut Batter, &mut Velocity), Without<FielderRing>>,
+    mut fielders_query: Query<(&Fielder, &mut Velocity)>,
+    mut batter_query: Query<(&mut Batter, &mut Velocity), Without<Fielder>>,
     mut ball_query: Query<
         (
             Entity,
@@ -101,16 +101,11 @@ pub(crate) fn consume_actions(
                     _ => continue,
                 };
                 let Some(rotation_direction) = movement.rotation_direction() else { continue };
-                let Some(mut velocity) = fielders_query
-                    .iter_mut()
-                    .find_map(|(ring, velocity)| {
-                        if *ring == ring_to_match {
-                            Some(velocity)
-                        } else {
-                            None
-                        }
-                    }) else { continue };
-                velocity.angvel = rotation_direction * Fielder::ROTATION_SPEED;
+                for (fielder, mut velocity) in fielders_query.iter_mut() {
+                    if fielder.ring == ring_to_match {
+                        velocity.angvel = rotation_direction * Fielder::ROTATION_SPEED;
+                    }
+                }
             }
             Action::Batter(movement) => {
                 if let Ok((mut bat, mut velocity)) = batter_query.get_single_mut() {

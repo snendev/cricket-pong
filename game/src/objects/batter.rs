@@ -1,51 +1,39 @@
 use bevy_ecs::prelude::{Bundle, Commands};
-use bevy_hierarchy::prelude::BuildChildren;
+use bevy_math::Vec2;
 use bevy_render::prelude::SpatialBundle;
 use bevy_transform::prelude::Transform;
 
-use bevy_rapier2d::prelude::{Collider, ColliderMassProperties, RigidBody, Sensor, Velocity};
+use bevy_rapier2d::prelude::{
+    Collider, ColliderMassProperties, MassProperties, RigidBody, Sensor, Velocity,
+};
 
-use cricket_pong_base::batter::{Bat, Batter, Wicket};
+use cricket_pong_base::batter::{Batter, Wicket};
 
-// the parent entity
 #[derive(Bundle)]
 struct BatterBundle {
     batter: Batter,
     rigid_body: RigidBody,
     spatial: SpatialBundle,
     velocity: Velocity,
-}
-
-impl BatterBundle {
-    pub fn new() -> Self {
-        BatterBundle {
-            batter: Batter::default(),
-            rigid_body: RigidBody::KinematicVelocityBased,
-            spatial: SpatialBundle::from_transform(Transform::IDENTITY),
-            velocity: Velocity::zero(),
-        }
-    }
-}
-
-#[derive(Bundle)]
-struct BatBundle {
-    bat: Bat,
-    spatial: SpatialBundle,
     collider: Collider,
     mass: ColliderMassProperties,
 }
 
-impl BatBundle {
+impl BatterBundle {
     pub fn new() -> Self {
-        BatBundle {
-            bat: Bat,
-            collider: Collider::cuboid(Bat::HWIDTH, Bat::HDEPTH),
-            spatial: SpatialBundle::from_transform(Transform::from_xyz(
-                Batter::RADIUS + Bat::HWIDTH,
-                0.,
-                1.,
-            )),
-            mass: ColliderMassProperties::Mass(0.),
+        let bat_true_radius = Batter::RADIUS + Batter::HWIDTH;
+        let inertia = Batter::MASS * bat_true_radius * bat_true_radius / 2.;
+        BatterBundle {
+            batter: Batter::default(),
+            rigid_body: RigidBody::KinematicVelocityBased,
+            spatial: SpatialBundle::from_transform(Transform::from_xyz(bat_true_radius, 0., 1.)),
+            velocity: Velocity::zero(),
+            collider: Collider::cuboid(Batter::HWIDTH, Batter::HDEPTH),
+            mass: ColliderMassProperties::MassProperties(MassProperties {
+                local_center_of_mass: Vec2::new(-bat_true_radius, 0.),
+                mass: Batter::MASS,
+                principal_inertia: inertia,
+            }),
         }
     }
 }
@@ -73,14 +61,7 @@ pub struct BatterSpawner;
 
 impl BatterSpawner {
     pub fn spawn(commands: &mut Commands) {
-        commands.spawn(BatterBundle::new()).with_children(|parent| {
-            parent.spawn((
-                SpatialBundle::default(),
-                Collider::ball(0.1),
-                ColliderMassProperties::Mass(50.),
-            ));
-            parent.spawn(BatBundle::new());
-        });
+        commands.spawn(BatterBundle::new());
         commands.spawn(WicketBundle::new());
     }
 }
