@@ -1,17 +1,17 @@
 use bevy_ecs::prelude::Bundle;
+use bevy_render::prelude::SpatialBundle;
 use bevy_transform::prelude::Transform;
 
 use bevy_rapier2d::prelude::{
     ActiveEvents, Collider, ColliderMassProperties, ExternalImpulse, RigidBody, Velocity,
 };
 
-use cricket_pong_base::ball::Ball;
+use cricket_pong_base::components::ball::Ball;
 
 #[derive(Bundle)]
-pub struct BallBundle {
-    ball: Ball,
+pub struct BallPhysicsBundle {
     rigid_body: RigidBody,
-    transform: Transform,
+    spatial: SpatialBundle,
     velocity: Velocity,
     collider: Collider,
     mass: ColliderMassProperties,
@@ -19,16 +19,15 @@ pub struct BallBundle {
     events: ActiveEvents,
 }
 
-impl BallBundle {
-    pub fn new(transform: Transform) -> Self {
-        BallBundle {
-            ball: Ball,
+impl BallPhysicsBundle {
+    pub fn new(transform: Transform, velocity: Velocity, impulse: ExternalImpulse) -> Self {
+        BallPhysicsBundle {
             rigid_body: RigidBody::Dynamic,
-            transform,
-            velocity: Velocity::default(),
+            spatial: SpatialBundle::from_transform(transform),
+            velocity,
             collider: Collider::ball(Ball::RADIUS),
             mass: ColliderMassProperties::Mass(5.),
-            impulse: ExternalImpulse::default(),
+            impulse,
             events: ActiveEvents::COLLISION_EVENTS,
         }
     }

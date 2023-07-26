@@ -1,3 +1,10 @@
-pub mod ball;
-pub mod batter;
-pub mod field;
+mod ball;
+pub use ball::BallPhysicsBundle;
+mod batter;
+pub use batter::BatterPhysicsBundle;
+mod boundary;
+pub use boundary::BoundaryPhysicsBundle;
+mod fielder;
+pub use fielder::FielderPhysicsBundle;
+mod wicket;
+pub use wicket::WicketPhysicsBundle;

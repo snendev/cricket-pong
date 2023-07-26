@@ -1,13 +1,14 @@
 use bevy::{
     input::InputSystem as BevyInputSet,
     prelude::{
-        apply_deferred, App, IntoSystemConfigs, IntoSystemSetConfig, Plugin, PreUpdate, SystemSet,
+        apply_deferred, App, Component, IntoSystemConfigs, IntoSystemSetConfig, Plugin, PreUpdate,
+        SystemSet,
     },
 };
 
 use leafwing_input_manager::prelude::InputManagerPlugin;
 
-use cricket_pong_game::{actions::Actions, GameplayMarkerPlugin};
+use cricket_pong_game::{base::actions::Actions, GameplayMarkerPlugin};
 
 mod actions;
 pub use actions::{BatterControl, FielderControl};
@@ -19,6 +20,12 @@ pub use bundles::{
 };
 
 mod systems;
+
+#[derive(Component)]
+pub enum Controller {
+    One,
+    Two,
+}
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, SystemSet)]
 pub struct PlayerControllerSet;

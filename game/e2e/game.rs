@@ -1,16 +1,15 @@
 use bevy_app::{prelude::App, Startup};
-use bevy_ecs::{
-    prelude::Commands,
-    schedule::{States, SystemSet},
-};
-use bevy_geppetto::Test;
+use bevy_ecs::prelude::{Commands, Local, Res, States, SystemSet};
+
 use bevy_rapier2d::render::RapierDebugRenderPlugin;
 
-use cricket_pong_base::{PlayerOne, PlayerTwo, Position, Score};
-use cricket_pong_controls::PlayerControllerPlugin;
+use bevy_geppetto::Test;
+
+use cricket_pong_base::components::player::{PlayerOne, PlayerTwo, Position, Score};
+use cricket_pong_controls::{Controller, PlayerControllerPlugin};
 use cricket_pong_graphics::GraphicsPlugin;
 
-use cricket_pong_game::{GamePhase, GameplayPlugin};
+use cricket_pong_game::{Actions, GamePhase, GameplayPlugin};
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
 pub struct GameplaySet;
@@ -22,8 +21,24 @@ pub enum TestState {
 }
 
 fn spawn_players(mut commands: Commands) {
-    commands.spawn((Position::Batter, PlayerOne, Score(0)));
-    commands.spawn((Position::Fielder, PlayerTwo, Score(0)));
+    commands.spawn((
+        Position::Batter,
+        PlayerOne,
+        Controller::One,
+        Score::default(),
+    ));
+    commands.spawn((
+        Position::Fielder,
+        PlayerTwo,
+        Controller::Two,
+        Score::default(),
+    ));
+}
+
+fn yield_local_ticks(actions: Res<Actions>, mut tick: Local<u16>) -> Vec<(u16, Actions)> {
+    let result = (*tick, actions.clone());
+    *tick += 1;
+    vec![result]
 }
 
 fn main() {
@@ -33,8 +48,10 @@ fn main() {
             app.add_state::<TestState>()
                 .add_plugins((
                     RapierDebugRenderPlugin::default(),
+                    GameplayPlugin::new(GameplaySet, TestState::Test, yield_local_ticks),
+                ))
+                .add_plugins((
                     GraphicsPlugin::new(TestState::Test, TestState::Test, GamePhase::GameOver),
-                    GameplayPlugin::new(GameplaySet, TestState::Test),
                     PlayerControllerPlugin,
                 ))
                 .add_systems(Startup, spawn_players);

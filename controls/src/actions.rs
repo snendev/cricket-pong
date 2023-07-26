@@ -1,7 +1,7 @@
 use bevy::reflect::Reflect;
 use leafwing_input_manager::prelude::Actionlike;
 
-use cricket_pong_game::actions::{BatterAction, FielderAction};
+use cricket_pong_game::base::actions::{BatterAction, FielderAction};
 
 #[derive(Actionlike, Reflect, Clone, Copy, Debug)]
 pub enum BatterControl {

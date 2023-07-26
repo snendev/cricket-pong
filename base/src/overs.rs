@@ -1,6 +1,6 @@
 use bevy_ecs::prelude::Resource;
 
-use crate::Identity;
+use crate::components::player::Identity;
 
 pub struct BowlScore {
     pub scorer: Identity,

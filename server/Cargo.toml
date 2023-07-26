@@ -1,0 +1,17 @@
+[package]
+name = "cricket_pong_server"
+version = "0.1.0"
+authors = ["Sean Sullivan <me@snen.dev>"]
+workspace = ".."
+edition = "2021"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+cricket_pong_game = { path = "../game" }
+bevy_app = { version = "0.11" }
+bevy_core = { version = "0.11" }
+bevy_ecs = { version = "0.11" }
+bevy_log = { version = "0.11" }
+bevy_utils = { version = "0.11" }
+naia-bevy-server = { git = "https://github.com/anellie/naia", branch = "bevy-0.11", features = ["transport_webrtc"]  }

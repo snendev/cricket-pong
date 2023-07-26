@@ -10,10 +10,12 @@ use bevy_prototype_lyon::prelude::{
     shapes, Fill, GeometryBuilder, ShapeBundle, ShapePlugin, Stroke,
 };
 
-use cricket_pong_base::{
+use cricket_pong_base::components::{
     ball::Ball,
-    batter::{Batter, Wicket},
-    fielder::{Boundary, Fielder, FielderRing},
+    batter::Batter,
+    boundary::Boundary,
+    fielder::{Fielder, FielderTrack},
+    wicket::Wicket,
 };
 
 fn setup_ball_shape(
@@ -34,11 +36,11 @@ fn setup_ball_shape(
 
 fn setup_field_shape(
     mut commands: Commands,
-    added_fielder_ring_query: Query<(Entity, &FielderRing), Added<FielderRing>>,
+    added_fielder_ring_query: Query<(Entity, &FielderTrack), Added<FielderTrack>>,
 ) {
-    for (entity, fielder_ring) in added_fielder_ring_query.iter() {
+    for (entity, track) in added_fielder_ring_query.iter() {
         let shape = shapes::Circle {
-            radius: fielder_ring.radius(),
+            radius: track.ring.radius(),
             ..Default::default()
         };
         commands.entity(entity).insert((

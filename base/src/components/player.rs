@@ -2,7 +2,9 @@ use std::fmt::Display;
 
 use bevy_ecs::prelude::Component;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+use naia_bevy_shared::{Property, Replicate, Serde};
+
+#[derive(Clone, Copy, Debug, PartialEq, Serde)]
 pub enum Identity {
     One,
     Two,
@@ -26,7 +28,7 @@ impl TryFrom<u8> for Identity {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Component)]
+#[derive(Clone, Copy, Debug, PartialEq, Component, Serde)]
 pub enum Position {
     Fielder,
     Batter,
@@ -49,11 +51,19 @@ impl Display for Position {
     }
 }
 
-#[derive(Component)]
-pub struct Score(pub u16);
+#[derive(Component, Replicate)]
+pub struct Score {
+    pub value: Property<u16>,
+}
 
-#[derive(Component)]
+impl Default for Score {
+    fn default() -> Self {
+        Score::new_complete(0)
+    }
+}
+
+#[derive(Component, Replicate)]
 pub struct PlayerOne;
 
-#[derive(Component)]
+#[derive(Component, Replicate)]
 pub struct PlayerTwo;

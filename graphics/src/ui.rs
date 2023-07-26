@@ -9,7 +9,10 @@ use bevy::{
     ui::{BorderColor, GridPlacement, GridTrack, Interaction},
 };
 
-use cricket_pong_base::{Identity, Over, PlayerOne, PlayerTwo, Position, Score};
+use cricket_pong_base::{
+    components::player::{Identity, PlayerOne, PlayerTwo, Position, Score},
+    Over,
+};
 
 #[derive(Component)]
 struct Scoreboard;
@@ -95,7 +98,7 @@ fn spawn_player_scoreboard(
                     player,
                     style: score_text_style.clone(),
                 },
-                TextBundle::from_section(score.0.to_string(), score_text_style),
+                TextBundle::from_section(score.value.to_string(), score_text_style),
             ));
             parent.spawn((
                 PositionTracker {
@@ -133,7 +136,7 @@ fn update_scoreboard(
     ] {
         for (mut text, tracker) in score_count_query.iter_mut() {
             if tracker.player == identity {
-                *text = Text::from_section(score.0.to_string(), tracker.style.clone());
+                *text = Text::from_section(score.value.to_string(), tracker.style.clone());
             }
         }
         for (mut text, tracker) in position_tracker_query.iter_mut() {
@@ -233,9 +236,9 @@ fn spawn_gameover_panel(
 ) {
     let player_one_score = player_one_query.single();
     let player_two_score = player_two_query.single();
-    let winner = if player_one_score.0 > player_two_score.0 {
+    let winner = if *player_one_score.value > *player_two_score.value {
         Some(Identity::One)
-    } else if player_one_score.0 < player_two_score.0 {
+    } else if *player_one_score.value < *player_two_score.value {
         Some(Identity::Two)
     } else {
         None
@@ -294,11 +297,11 @@ fn spawn_gameover_panel(
                         ..Default::default()
                     };
                     parent.spawn(TextBundle::from_section(
-                        format!("Player One: {}", player_one_score.0),
+                        format!("Player One: {}", *player_one_score.value),
                         score_text_style.clone(),
                     ));
                     parent.spawn(TextBundle::from_section(
-                        format!("Player Two: {}", player_two_score.0),
+                        format!("Player Two: {}", *player_two_score.value),
                         score_text_style,
                     ));
 

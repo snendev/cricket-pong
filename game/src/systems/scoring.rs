@@ -1,15 +1,25 @@
-use bevy_ecs::prelude::{EventReader, Local, NextState, Query, ResMut, With, Without};
+use bevy_ecs::{
+    prelude::{EventReader, Local, NextState, Query, ResMut, With, Without},
+    schedule::SystemSet,
+};
 
 use bevy_rapier2d::{prelude::CollisionEvent, rapier::prelude::CollisionEventFlags};
 
 use cricket_pong_base::{
-    ball::Ball,
-    batter::Wicket,
-    fielder::{Boundary, Fielder},
-    BowlResult, BowlScore, Identity, Over, PlayerOne, PlayerTwo, Position, Score,
+    components::{
+        ball::Ball,
+        boundary::Boundary,
+        fielder::Fielder,
+        player::{Identity, PlayerOne, PlayerTwo, Position, Score},
+        wicket::Wicket,
+    },
+    BowlResult, BowlScore, Over,
 };
 
 use crate::GamePhase;
+
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub(crate) struct ScoringSet;
 
 pub(crate) fn register_goals(
     mut collision_events: EventReader<CollisionEvent>,
@@ -33,13 +43,13 @@ pub(crate) fn register_goals(
         } else {
             return;
         };
-        score.0 += scored_points;
+        *score.value += scored_points;
 
         let bowl_result = over.push(BowlScore {
             scorer,
             value: scored_points,
         });
-        state.set(GamePhase::Preparing);
+        state.set(GamePhase::Bowling);
         match bowl_result {
             BowlResult::None => {}
             BowlResult::ChangePositions => {

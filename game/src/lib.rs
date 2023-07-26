@@ -1,24 +1,21 @@
-use bevy_app::prelude::{App, Plugin, Update};
-use bevy_ecs::{
-    prelude::{in_state, OnEnter, States, SystemSet},
-    schedule::{Condition, IntoSystemConfigs, OnExit},
-};
+use std::marker::PhantomData;
 
+use bevy_app::prelude::{App, Plugin, Update};
+use bevy_ecs::prelude::{IntoSystem, IntoSystemConfigs, OnEnter, OnExit, States, SystemSet};
 use bevy_math::prelude::Vec2;
 
 use bevy_rapier2d::prelude::{RapierConfiguration, RapierPhysicsPlugin};
 
-pub use cricket_pong_base::{self as base, Over};
+pub use cricket_pong_base::{self as base, actions::Actions, Over};
 
-pub mod actions;
 mod objects;
+mod schedule;
 mod systems;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, States)]
 pub enum GamePhase {
     #[default]
     Inactive,
-    Preparing,
     Bowling,
     Active,
     GameOver,
@@ -27,14 +24,31 @@ pub enum GamePhase {
 // This is the plugin that attaches gameplay
 // It allows a SystemSet type parameter so that different environments can attach
 // the same logic and run them under the appropriate conditions.
-pub struct GameplayPlugin<Set: SystemSet, State: States> {
+pub struct GameplayPlugin<
+    Set: SystemSet,
+    State: States,
+    T: IntoSystem<(), Vec<(u16, Actions)>, TM> + Copy,
+    TM,
+> {
     set: Set,
     active_screen: State,
+    tick_system: T,
+    tick_params_marker: PhantomData<TM>,
 }
 
-impl<Set: SystemSet, State: States> GameplayPlugin<Set, State> {
-    pub fn new(set: Set, active_screen: State) -> Self {
-        GameplayPlugin { set, active_screen }
+impl<Set, State, T, TM> GameplayPlugin<Set, State, T, TM>
+where
+    Set: SystemSet,
+    State: States,
+    T: IntoSystem<(), Vec<(u16, Actions)>, TM> + Copy,
+{
+    pub fn new(set: Set, active_screen: State, tick_system: T) -> Self {
+        GameplayPlugin {
+            set,
+            active_screen,
+            tick_system,
+            tick_params_marker: PhantomData::<TM>,
+        }
     }
 }
 
@@ -53,25 +67,47 @@ impl GameplayMarkerPlugin {
     }
 }
 
-impl<GameplaySet: SystemSet + Copy, State: States + Copy> Plugin
-    for GameplayPlugin<GameplaySet, State>
+impl<GameplaySet, State, T, TM> Plugin for GameplayPlugin<GameplaySet, State, T, TM>
+where
+    GameplaySet: SystemSet + Copy,
+    State: States + Copy,
+    T: IntoSystem<(), Vec<(u16, Actions)>, TM> + Copy + Send + Sync + 'static,
+    TM: Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
         // if this has not been added yet, initialize physics, the marker, and GamePhase state
         if !GameplayMarkerPlugin::is_added(app) {
-            println!("Add state gamephase");
+            let (schedule_label, schedule) = schedule::build_core_tick_schedule();
             app.add_plugins(GameplayMarkerPlugin)
                 .add_state::<GamePhase>()
+                .init_resource::<Over>()
+                .init_resource::<Actions>()
                 .insert_resource(RapierConfiguration {
                     gravity: Vec2::ZERO,
+                    // TODO: configure timestep_mode during rollback
                     ..Default::default()
                 })
-                .init_resource::<Over>()
-                .add_plugins(RapierPhysicsPlugin::<()>::default());
+                .add_plugins(RapierPhysicsPlugin::<()>::default().with_default_system_setup(false))
+                .add_schedule(schedule_label, schedule);
         }
 
         // in all cases, add all the gameplay systems to the defined SystemSet
         app.add_systems(
+            Update,
+            (
+                (
+                    systems::scene::attach_ball_physics_components,
+                    systems::scene::attach_fielder_physics_components,
+                    systems::scene::attach_batter_physics_components,
+                    systems::scene::attach_boundary_physics_components,
+                    systems::scene::attach_wicket_physics_components,
+                ),
+                self.tick_system.pipe(schedule::run_core_game_loop),
+            )
+                .chain()
+                .in_set(self.set),
+        )
+        .add_systems(
             OnEnter(self.active_screen),
             systems::scene::spawn_scene.in_set(self.set),
         )
@@ -81,19 +117,6 @@ impl<GameplaySet: SystemSet + Copy, State: States + Copy> Plugin
                 systems::scene::despawn_scene,
                 systems::scene::deactivate_game_phase,
                 systems::scene::cleanup_resources,
-            )
-                .in_set(self.set),
-        )
-        .add_systems(
-            OnEnter(GamePhase::Preparing),
-            systems::tick::ready_bowling_phase.in_set(self.set),
-        )
-        .add_systems(
-            Update,
-            (
-                systems::tick::consume_actions
-                    .run_if(in_state(GamePhase::Bowling).or_else(in_state(GamePhase::Active))),
-                systems::scoring::register_goals.run_if(in_state(GamePhase::Active)),
             )
                 .in_set(self.set),
         );
