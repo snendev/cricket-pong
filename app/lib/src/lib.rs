@@ -5,7 +5,7 @@ use bevy::prelude::{
 
 use cricket_pong_controls::{Controller, PlayerControllerPlugin};
 use cricket_pong_game::{
-    base::components::player::{PlayerOne, PlayerTwo, Position, Score},
+    base::components::player::{PlayerOne, PlayerTwo, Position},
     Actions, GamePhase, GameplayPlugin,
 };
 use cricket_pong_graphics::GraphicsPlugin;
@@ -28,18 +28,8 @@ enum AppScreen {
 }
 
 fn spawn_local_players(mut commands: Commands) {
-    commands.spawn((
-        Position::Batter,
-        PlayerOne,
-        Controller::One,
-        Score::default(),
-    ));
-    commands.spawn((
-        Position::Fielder,
-        PlayerTwo,
-        Controller::Two,
-        Score::default(),
-    ));
+    commands.spawn((Position::Batter, PlayerOne, Controller::One));
+    commands.spawn((Position::Fielder, PlayerTwo, Controller::Two));
 }
 
 fn yield_local_ticks(actions: Res<Actions>, mut tick: Local<u16>) -> Vec<(u16, Actions)> {
@@ -70,11 +60,7 @@ pub fn run_app(canvas: Option<String>) {
         ))
         .add_plugins((
             PlayerControllerPlugin,
-            GraphicsPlugin::new(
-                AppScreen::LocalGame,
-                AppScreen::MainMenu,
-                GamePhase::GameOver,
-            ),
+            GraphicsPlugin::new(AppScreen::MainMenu, GamePhase::GameOver),
         ))
         .add_systems(OnEnter(AppScreen::LocalGame), spawn_local_players)
         .run();

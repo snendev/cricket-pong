@@ -5,7 +5,7 @@ use bevy_rapier2d::render::RapierDebugRenderPlugin;
 
 use bevy_geppetto::Test;
 
-use cricket_pong_base::components::player::{PlayerOne, PlayerTwo, Position, Score};
+use cricket_pong_base::components::player::{PlayerOne, PlayerTwo, Position};
 use cricket_pong_controls::{Controller, PlayerControllerPlugin};
 use cricket_pong_graphics::GraphicsPlugin;
 
@@ -18,21 +18,12 @@ pub enum TestState {
     #[default]
     Test,
     Gameover,
+    Complete,
 }
 
 fn spawn_players(mut commands: Commands) {
-    commands.spawn((
-        Position::Batter,
-        PlayerOne,
-        Controller::One,
-        Score::default(),
-    ));
-    commands.spawn((
-        Position::Fielder,
-        PlayerTwo,
-        Controller::Two,
-        Score::default(),
-    ));
+    commands.spawn((Position::Batter, PlayerOne, Controller::One));
+    commands.spawn((Position::Fielder, PlayerTwo, Controller::Two));
 }
 
 fn yield_local_ticks(actions: Res<Actions>, mut tick: Local<u16>) -> Vec<(u16, Actions)> {
@@ -51,7 +42,7 @@ fn main() {
                     GameplayPlugin::new(GameplaySet, TestState::Test, yield_local_ticks),
                 ))
                 .add_plugins((
-                    GraphicsPlugin::new(TestState::Test, TestState::Test, GamePhase::GameOver),
+                    GraphicsPlugin::new(TestState::Complete, GamePhase::GameOver),
                     PlayerControllerPlugin,
                 ))
                 .add_systems(Startup, spawn_players);

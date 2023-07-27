@@ -10,3 +10,6 @@ pub mod physics;
 
 // player
 pub mod player;
+
+// scoreboard
+pub mod scoreboard;

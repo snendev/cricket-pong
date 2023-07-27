@@ -3,22 +3,22 @@ use bevy::{
         in_state, Added, AlignItems, App, BackgroundColor, BuildChildren, ButtonBundle, Changed,
         ChildBuilder, Color, Commands, Component, DespawnRecursiveExt, Display, Entity,
         FlexDirection, GridAutoFlow, IntoSystemConfigs, JustifyContent, NextState, NodeBundle,
-        OnEnter, OnExit, Plugin, PositionType, PostUpdate, Query, Res, ResMut, States, Style,
-        SystemSet, Text, TextBundle, TextStyle, UiRect, Val, With, Without,
+        OnEnter, Plugin, PositionType, PostUpdate, Query, ResMut, States, Style, SystemSet, Text,
+        TextBundle, TextStyle, UiRect, Val, With, Without,
     },
     ui::{BorderColor, GridPlacement, GridTrack, Interaction},
 };
 
-use cricket_pong_base::{
-    components::player::{Identity, PlayerOne, PlayerTwo, Position, Score},
-    Over,
+use cricket_pong_base::components::{
+    player::{Identity, PlayerOne, PlayerTwo, Position},
+    scoreboard::Scoreboard,
 };
 
 #[derive(Component)]
-struct Scoreboard;
+struct ScoreboardUI;
 
 #[derive(Component)]
-struct OverScoreboard;
+struct OverScoreboardUI;
 
 #[derive(Component)]
 struct GameoverPanel;
@@ -42,15 +42,10 @@ struct BowlTracker {
     pub parent: Entity,
 }
 
-fn spawn_player_scoreboard(
-    commands: &mut Commands,
-    score: &Score,
-    position: &Position,
-    player: Identity,
-) {
+fn spawn_player_scoreboard(commands: &mut Commands, position: &Position, player: Identity) {
     commands
         .spawn((
-            Scoreboard,
+            ScoreboardUI,
             NodeBundle {
                 style: Style {
                     padding: UiRect::all(Val::Px(12.)),
@@ -98,7 +93,7 @@ fn spawn_player_scoreboard(
                     player,
                     style: score_text_style.clone(),
                 },
-                TextBundle::from_section(score.value.to_string(), score_text_style),
+                TextBundle::from_section("0".to_string(), score_text_style),
             ));
             parent.spawn((
                 PositionTracker {
@@ -112,69 +107,87 @@ fn spawn_player_scoreboard(
 
 fn spawn_scoreboard(
     mut commands: Commands,
-    player_one_query: Query<(&Score, &Position), (Added<PlayerOne>, Without<PlayerTwo>)>,
-    player_two_query: Query<(&Score, &Position), (Added<PlayerTwo>, Without<PlayerOne>)>,
+    player_one_query: Query<&Position, (Added<PlayerOne>, Without<PlayerTwo>)>,
+    player_two_query: Query<&Position, (Added<PlayerTwo>, Without<PlayerOne>)>,
 ) {
-    let Ok((score_one, position_one)) = player_one_query.get_single() else { return };
-    let Ok((score_two, position_two)) = player_two_query.get_single() else { return };
-    spawn_player_scoreboard(&mut commands, score_one, position_one, Identity::One);
-    spawn_player_scoreboard(&mut commands, score_two, position_two, Identity::Two);
+    let Ok(position_one) = player_one_query.get_single() else { return };
+    let Ok(position_two) = player_two_query.get_single() else { return };
+    spawn_player_scoreboard(&mut commands, position_one, Identity::One);
+    spawn_player_scoreboard(&mut commands, position_two, Identity::Two);
 }
 
-fn update_scoreboard(
-    player_one_query: Query<(&Score, &Position), (With<PlayerOne>, Without<PlayerTwo>)>,
-    player_two_query: Query<(&Score, &Position), (With<PlayerTwo>, Without<PlayerOne>)>,
+fn track_scores(
+    scoreboard_query: Query<&Scoreboard, Changed<Scoreboard>>,
     mut score_count_query: Query<(&mut Text, &ScoreTracker)>,
-    mut position_tracker_query: Query<(&mut Text, &PositionTracker), Without<ScoreTracker>>,
 ) {
-    let Ok((score_one, position_one)) = player_one_query.get_single() else { return };
-    let Ok((score_two, position_two)) = player_two_query.get_single() else { return };
+    let Ok(scoreboard) = scoreboard_query.get_single() else { return };
+    let player_one_score = scoreboard.player_score(Identity::One);
+    let player_two_score = scoreboard.player_score(Identity::Two);
 
-    for (score, position, identity) in vec![
-        (score_one, position_one, Identity::One),
-        (score_two, position_two, Identity::Two),
+    for (score, identity) in vec![
+        (player_one_score, Identity::One),
+        (player_two_score, Identity::Two),
     ] {
         for (mut text, tracker) in score_count_query.iter_mut() {
             if tracker.player == identity {
-                *text = Text::from_section(score.value.to_string(), tracker.style.clone());
-            }
-        }
-        for (mut text, tracker) in position_tracker_query.iter_mut() {
-            if tracker.player == identity {
-                *text = Text::from_section(position.to_string(), tracker.style.clone());
+                *text = Text::from_section(score.to_string(), tracker.style.clone());
             }
         }
     }
 }
 
-fn spawn_over_tracker(mut commands: Commands) {
-    commands
-        .spawn((
-            OverScoreboard,
-            NodeBundle {
-                style: Style {
-                    display: Display::Grid,
-                    grid_auto_flow: GridAutoFlow::Column,
-                    grid_template_rows: vec![GridTrack::min_content(), GridTrack::min_content()],
-                    position_type: PositionType::Absolute,
-                    bottom: Val::Px(0.),
-                    left: Val::Px(0.),
+fn track_positions(
+    player_one_query: Query<&Position, (Changed<Position>, With<PlayerOne>, Without<PlayerTwo>)>,
+    player_two_query: Query<&Position, (Changed<Position>, With<PlayerTwo>, Without<PlayerOne>)>,
+    mut position_tracker_query: Query<(&mut Text, &PositionTracker), Without<ScoreTracker>>,
+) {
+    let position_one = player_one_query.get_single();
+    let position_two = player_two_query.get_single();
+
+    for (position, identity) in vec![(position_one, Identity::One), (position_two, Identity::Two)] {
+        for (mut text, tracker) in position_tracker_query.iter_mut() {
+            if tracker.player == identity {
+                if let Ok(position) = position {
+                    *text = Text::from_section(position.to_string(), tracker.style.clone());
+                }
+            }
+        }
+    }
+}
+
+fn spawn_over_tracker(mut commands: Commands, scoreboard_query: Query<(), Added<Scoreboard>>) {
+    for _ in scoreboard_query.iter() {
+        commands
+            .spawn((
+                OverScoreboardUI,
+                NodeBundle {
+                    style: Style {
+                        display: Display::Grid,
+                        grid_auto_flow: GridAutoFlow::Column,
+                        grid_template_rows: vec![
+                            GridTrack::min_content(),
+                            GridTrack::min_content(),
+                        ],
+                        position_type: PositionType::Absolute,
+                        bottom: Val::Px(0.),
+                        left: Val::Px(0.),
+                        ..Default::default()
+                    },
+                    background_color: BackgroundColor(Color::NAVY),
                     ..Default::default()
                 },
-                background_color: BackgroundColor(Color::NAVY),
-                ..Default::default()
-            },
-        ))
-        .with_children(|parent| {
-            let text_style = TextStyle {
-                font_size: 28.,
-                color: Color::BLACK,
-                ..Default::default()
-            };
-            for row in 0..2 {
-                spawn_over_row(parent, row, &text_style);
-            }
-        });
+            ))
+            .with_children(|parent| {
+                let text_style = TextStyle {
+                    font_size: 28.,
+                    color: Color::BLACK,
+                    ..Default::default()
+                };
+                for row in 0..2 {
+                    spawn_over_row(parent, row, &text_style);
+                }
+            });
+    }
 }
 
 fn spawn_over_row(parent: &mut ChildBuilder, row: usize, text_style: &TextStyle) {
@@ -208,11 +221,12 @@ fn spawn_over_row(parent: &mut ChildBuilder, row: usize, text_style: &TextStyle)
 fn update_over_tracker(
     mut container_query: Query<&mut BackgroundColor>,
     mut text_node_query: Query<(&BowlTracker, &mut Text)>,
-    over: Res<Over>,
+    scoreboard_query: Query<&Scoreboard>,
 ) {
+    let Ok(scoreboard) = scoreboard_query.get_single() else { return };
     for (bowl_tracker, mut text) in text_node_query.iter_mut() {
         let Ok(mut container_style) = container_query.get_mut(bowl_tracker.parent) else { continue };
-        let score = over.get(bowl_tracker.index);
+        let score = scoreboard.get(bowl_tracker.index);
         if let Some(score) = score {
             *text = Text::from_section(score.value.to_string(), bowl_tracker.style.clone());
             container_style.0 = match score.scorer {
@@ -229,16 +243,13 @@ fn update_over_tracker(
 #[derive(Component)]
 struct ReturnButton;
 
-fn spawn_gameover_panel(
-    mut commands: Commands,
-    player_one_query: Query<&Score, With<PlayerOne>>,
-    player_two_query: Query<&Score, With<PlayerTwo>>,
-) {
-    let player_one_score = player_one_query.single();
-    let player_two_score = player_two_query.single();
-    let winner = if *player_one_score.value > *player_two_score.value {
+fn spawn_gameover_panel(mut commands: Commands, scoreboard_query: Query<&Scoreboard>) {
+    let Ok(scoreboard) = scoreboard_query.get_single() else { return };
+    let player_one_score = scoreboard.player_score(Identity::One);
+    let player_two_score = scoreboard.player_score(Identity::Two);
+    let winner = if player_one_score > player_two_score {
         Some(Identity::One)
-    } else if *player_one_score.value < *player_two_score.value {
+    } else if player_one_score < player_two_score {
         Some(Identity::Two)
     } else {
         None
@@ -297,11 +308,11 @@ fn spawn_gameover_panel(
                         ..Default::default()
                     };
                     parent.spawn(TextBundle::from_section(
-                        format!("Player One: {}", *player_one_score.value),
+                        format!("Player One: {}", player_one_score),
                         score_text_style.clone(),
                     ));
                     parent.spawn(TextBundle::from_section(
-                        format!("Player Two: {}", *player_two_score.value),
+                        format!("Player Two: {}", player_two_score),
                         score_text_style,
                     ));
 
@@ -356,8 +367,8 @@ fn build_detect_return_selection_system<AppScreen: States + Copy>(
 
 fn cleanup_ui(
     mut commands: Commands,
-    scoreboard_query: Query<Entity, With<Scoreboard>>,
-    over_scoreboard_query: Query<Entity, With<OverScoreboard>>,
+    scoreboard_query: Query<Entity, With<ScoreboardUI>>,
+    over_scoreboard_query: Query<Entity, With<OverScoreboardUI>>,
     gameover_panel_query: Query<Entity, With<GameoverPanel>>,
 ) {
     for entity in scoreboard_query.iter() {
@@ -375,7 +386,6 @@ fn cleanup_ui(
 pub struct GameUISet;
 
 pub struct GameUIPlugin<AppScreen: States, GameState: States> {
-    active_screen: AppScreen,
     return_screen: AppScreen,
     gameover_state: GameState,
 }
@@ -385,13 +395,8 @@ where
     AppScreen: States,
     GameState: States,
 {
-    pub fn new(
-        active_screen: AppScreen,
-        return_screen: AppScreen,
-        gameover_state: GameState,
-    ) -> Self {
+    pub fn new(return_screen: AppScreen, gameover_state: GameState) -> Self {
         GameUIPlugin {
-            active_screen,
             return_screen,
             gameover_state,
         }
@@ -404,17 +409,23 @@ where
     GameState: States + Copy,
 {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(self.active_screen), spawn_over_tracker)
-            .add_systems(
-                PostUpdate,
-                (spawn_scoreboard, update_scoreboard, update_over_tracker).in_set(GameUISet),
+        app.add_systems(
+            PostUpdate,
+            (
+                spawn_scoreboard,
+                track_scores,
+                track_positions,
+                spawn_over_tracker,
+                update_over_tracker,
             )
-            .add_systems(OnEnter(self.gameover_state), spawn_gameover_panel)
-            .add_systems(
-                PostUpdate,
-                build_detect_return_selection_system(self.return_screen)
-                    .run_if(in_state(self.gameover_state)),
-            )
-            .add_systems(OnExit(self.active_screen), cleanup_ui);
+                .in_set(GameUISet),
+        )
+        .add_systems(OnEnter(self.gameover_state), spawn_gameover_panel)
+        .add_systems(
+            PostUpdate,
+            build_detect_return_selection_system(self.return_screen)
+                .run_if(in_state(self.gameover_state)),
+        )
+        .add_systems(OnEnter(self.return_screen), cleanup_ui);
     }
 }

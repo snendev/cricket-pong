@@ -7,7 +7,6 @@ mod ui;
 pub struct GraphicsSet;
 
 pub struct GraphicsPlugin<AppScreen: States, GameState: States> {
-    active_screen: AppScreen,
     return_screen: AppScreen,
     gameover_state: GameState,
 }
@@ -17,13 +16,8 @@ where
     AppScreen: States,
     GameState: States,
 {
-    pub fn new(
-        active_screen: AppScreen,
-        return_screen: AppScreen,
-        gameover_state: GameState,
-    ) -> Self {
+    pub fn new(return_screen: AppScreen, gameover_state: GameState) -> Self {
         GraphicsPlugin {
-            active_screen,
             return_screen,
             gameover_state,
         }
@@ -42,7 +36,6 @@ where
     fn build(&self, app: &mut App) {
         app.add_plugins(objects::ObjectGraphicsPlugin)
             .add_plugins(ui::GameUIPlugin::new(
-                self.active_screen,
                 self.return_screen,
                 self.gameover_state,
             ))

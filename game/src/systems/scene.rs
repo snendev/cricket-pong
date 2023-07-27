@@ -9,9 +9,9 @@ use cricket_pong_base::{
         fielder::{Fielder, FielderBundle, FielderPosition, FielderRing, FielderTrack},
         physics::{ExternalImpulse, Transform, Velocity},
         player::{PlayerOne, PlayerTwo},
+        scoreboard::Scoreboard,
         wicket::{Wicket, WicketBundle},
     },
-    Over,
 };
 
 use crate::{
@@ -50,6 +50,9 @@ pub(crate) fn spawn_scene(mut commands: Commands, mut state: ResMut<NextState<Ga
 
     // spawn boundary
     commands.spawn(BoundaryBundle::default());
+
+    // spawn scoreboard
+    commands.spawn(Scoreboard::default());
 
     state.set(GamePhase::Bowling);
 }
@@ -124,6 +127,7 @@ pub(crate) fn despawn_scene(
     ball_query: Query<Entity, With<Ball>>,
     player_one_query: Query<Entity, With<PlayerOne>>,
     player_two_query: Query<Entity, With<PlayerTwo>>,
+    scoreboard_query: Query<Entity, With<Scoreboard>>,
 ) {
     for entity in boundary_query.iter() {
         commands.entity(entity).despawn();
@@ -149,6 +153,9 @@ pub(crate) fn despawn_scene(
     for entity in player_two_query.iter() {
         commands.entity(entity).despawn();
     }
+    for entity in scoreboard_query.iter() {
+        commands.entity(entity).despawn();
+    }
 }
 
 // should be run OnExit(MyGameState)
@@ -156,7 +163,6 @@ pub(crate) fn deactivate_game_phase(mut state: ResMut<NextState<GamePhase>>) {
     state.set(GamePhase::Inactive);
 }
 
-pub(crate) fn cleanup_resources(mut overs: ResMut<Over>, mut actions: ResMut<Actions>) {
-    overs.clear();
+pub(crate) fn cleanup_resources(mut actions: ResMut<Actions>) {
     actions.0.clear();
 }

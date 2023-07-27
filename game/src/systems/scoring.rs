@@ -5,15 +5,13 @@ use bevy_ecs::{
 
 use bevy_rapier2d::{prelude::CollisionEvent, rapier::prelude::CollisionEventFlags};
 
-use cricket_pong_base::{
-    components::{
-        ball::Ball,
-        boundary::Boundary,
-        fielder::Fielder,
-        player::{Identity, PlayerOne, PlayerTwo, Position, Score},
-        wicket::Wicket,
-    },
-    BowlResult, BowlScore, Over,
+use cricket_pong_base::components::{
+    ball::Ball,
+    boundary::Boundary,
+    fielder::Fielder,
+    player::{Identity, PlayerOne, PlayerTwo, Position},
+    scoreboard::{BowlResult, BowlScore, Scoreboard},
+    wicket::Wicket,
 };
 
 use crate::GamePhase;
@@ -23,29 +21,29 @@ pub(crate) struct ScoringSet;
 
 pub(crate) fn register_goals(
     mut collision_events: EventReader<CollisionEvent>,
-    mut player_one_query: Query<(&mut Score, &mut Position), (With<PlayerOne>, Without<PlayerTwo>)>,
-    mut player_two_query: Query<(&mut Score, &mut Position), (With<PlayerTwo>, Without<PlayerOne>)>,
+    mut player_one_query: Query<&mut Position, (With<PlayerOne>, Without<PlayerTwo>)>,
+    mut player_two_query: Query<&mut Position, (With<PlayerTwo>, Without<PlayerOne>)>,
     ball_query: Query<&Ball>,
     wicket_query: Query<&Wicket>,
     boundary_query: Query<&Boundary>,
     fielder_query: Query<&Fielder>,
-    mut over: ResMut<Over>,
+    mut scoreboard_query: Query<&mut Scoreboard>,
     mut state: ResMut<NextState<GamePhase>>,
     mut pass_count: Local<u8>,
 ) {
     let mut score_points = move |scored_points: u16, scoring_position: Position| {
-        let (player_one_score, mut player_one_position) = player_one_query.single_mut();
-        let (player_two_score, mut player_two_position) = player_two_query.single_mut();
-        let (mut score, scorer) = if *player_one_position == scoring_position {
-            (player_one_score, Identity::One)
+        let mut player_one_position = player_one_query.single_mut();
+        let mut player_two_position = player_two_query.single_mut();
+        let mut scoreboard = scoreboard_query.single_mut();
+        let scorer = if *player_one_position == scoring_position {
+            Identity::One
         } else if *player_two_position == scoring_position {
-            (player_two_score, Identity::Two)
+            Identity::Two
         } else {
             return;
         };
-        *score.value += scored_points;
 
-        let bowl_result = over.push(BowlScore {
+        let bowl_result = scoreboard.push(BowlScore {
             scorer,
             value: scored_points,
         });

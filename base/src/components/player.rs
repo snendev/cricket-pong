@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use bevy_ecs::prelude::Component;
 
-use naia_bevy_shared::{Property, Replicate, Serde};
+use naia_bevy_shared::{Replicate, Serde};
 
 #[derive(Clone, Copy, Debug, PartialEq, Serde)]
 pub enum Identity {
@@ -48,17 +48,6 @@ impl std::ops::Not for Position {
 impl Display for Position {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
-    }
-}
-
-#[derive(Component, Replicate)]
-pub struct Score {
-    pub value: Property<u16>,
-}
-
-impl Default for Score {
-    fn default() -> Self {
-        Score::new_complete(0)
     }
 }
 

@@ -1,12 +1,14 @@
 use std::marker::PhantomData;
 
 use bevy_app::prelude::{App, Plugin, Update};
-use bevy_ecs::prelude::{IntoSystem, IntoSystemConfigs, OnEnter, OnExit, States, SystemSet};
+use bevy_ecs::prelude::{
+    in_state, not, IntoSystem, IntoSystemConfigs, OnEnter, OnExit, States, SystemSet,
+};
 use bevy_math::prelude::Vec2;
 
 use bevy_rapier2d::prelude::{RapierConfiguration, RapierPhysicsPlugin};
 
-pub use cricket_pong_base::{self as base, actions::Actions, Over};
+pub use cricket_pong_base::{self as base, actions::Actions};
 
 mod objects;
 mod schedule;
@@ -80,7 +82,6 @@ where
             let (schedule_label, schedule) = schedule::build_core_tick_schedule();
             app.add_plugins(GameplayMarkerPlugin)
                 .add_state::<GamePhase>()
-                .init_resource::<Over>()
                 .init_resource::<Actions>()
                 .insert_resource(RapierConfiguration {
                     gravity: Vec2::ZERO,
@@ -105,7 +106,8 @@ where
                 self.tick_system.pipe(schedule::run_core_game_loop),
             )
                 .chain()
-                .in_set(self.set),
+                .in_set(self.set)
+                .run_if(not(in_state(GamePhase::GameOver))),
         )
         .add_systems(
             OnEnter(self.active_screen),
