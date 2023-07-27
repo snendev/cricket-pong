@@ -4,11 +4,12 @@ use bevy_ecs::prelude::{
 };
 use bevy_utils::HashMap;
 
-use cricket_pong_game::GameplayPlugin;
 use naia_bevy_server::UserKey;
 use naia_bevy_server::{Plugin as NaiaServerPlugin, ReceiveEvents, ServerConfig};
 
-use cricket_pong_game::base::protocol::protocol;
+use common_lobby_server::CommonLobbyPlugin;
+
+use cricket_pong_game::{base::protocol::protocol, GameplayPlugin};
 
 pub mod connection;
 pub mod init;
@@ -57,33 +58,28 @@ pub struct ServerPlugin;
 
 impl Plugin for ServerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(NaiaServerPlugin::new(
-            ServerConfig {
-                require_auth: false,
-                ..Default::default()
-            },
-            protocol(),
-        ))
-        .configure_set(Update, TickSet.in_set(ReceiveEvents))
-        .init_resource::<UserEntities>()
-        .add_systems(Startup, init::init)
-        .add_systems(
-            Update,
-            (
-                (
-                    connection::connect_events,
-                    connection::disconnect_events,
-                    connection::error_events,
-                )
-                    .before(TickSet),
-                tick::update_entity_scopes.after(TickSet),
+        app.add_state::<ServerState>()
+            .add_plugins(NaiaServerPlugin::new(
+                ServerConfig {
+                    require_auth: false,
+                    ..Default::default()
+                },
+                protocol(),
+            ))
+            .add_plugins(CommonLobbyPlugin)
+            .configure_set(Update, TickSet.in_set(ReceiveEvents))
+            .init_resource::<UserEntities>()
+            .add_systems(Startup, init::init)
+            .add_systems(
+                Update,
+                tick::update_entity_scopes
+                    .after(TickSet)
+                    .in_set(ReceiveEvents),
             )
-                .in_set(ReceiveEvents),
-        )
-        .add_plugins(GameplayPlugin::new(
-            TickSet,
-            ServerState::Active,
-            tick::tick_events,
-        ));
+            .add_plugins(GameplayPlugin::new(
+                TickSet,
+                ServerState::Active,
+                tick::tick_events,
+            ));
     }
 }

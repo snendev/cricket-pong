@@ -8,15 +8,15 @@ use naia_bevy_client::{
 
 use super::ConnectionState;
 
-pub fn inititate_connection(mut client: Client) {
+pub(crate) fn inititate_connection(mut client: Client) {
     // create a socket
     let socket = webrtc::Socket::new("http://127.0.0.1:14191", client.socket_config());
     client.connect(socket);
 }
 
-pub fn connection_events(
-    mut event_reader: EventReader<ConnectEvent>,
+pub(crate) fn connection_events(
     client: Client,
+    mut event_reader: EventReader<ConnectEvent>,
     mut state: ResMut<NextState<ConnectionState>>,
 ) {
     for _event in event_reader.iter() {
@@ -26,7 +26,7 @@ pub fn connection_events(
     }
 }
 
-pub fn disconnection_events(
+pub(crate) fn disconnection_events(
     client: Client,
     mut state: ResMut<NextState<ConnectionState>>,
     mut event_reader: EventReader<DisconnectEvent>,

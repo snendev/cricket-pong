@@ -2,14 +2,16 @@ use std::time::Duration;
 
 use naia_bevy_shared::{LinkConditionerConfig, Protocol, ProtocolPlugin};
 
+use common_lobby_protocol::CommonLobbyProtocolPlugin;
+
 use crate::{
     components::{ball, batter, boundary, fielder, physics, wicket},
     protocol::{channels, messages},
 };
 
-struct BingoProtocolPlugin;
+struct CricketPongProtocolPlugin;
 
-impl ProtocolPlugin for BingoProtocolPlugin {
+impl ProtocolPlugin for CricketPongProtocolPlugin {
     fn build(&self, protocol: &mut Protocol) {
         channels::PlayerActionsChannel::add_to_protocol(protocol);
         channels::PlayerAssignmentChannel::add_to_protocol(protocol);
@@ -32,6 +34,7 @@ pub fn protocol() -> Protocol {
     Protocol::builder()
         .tick_interval(Duration::from_millis(16))
         .link_condition(LinkConditionerConfig::good_condition())
-        .add_plugin(BingoProtocolPlugin)
+        .add_plugin(CricketPongProtocolPlugin)
+        .add_plugin(CommonLobbyProtocolPlugin)
         .build()
 }

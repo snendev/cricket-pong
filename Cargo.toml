@@ -6,9 +6,11 @@ members = [
     "controls",
     "game",
     "graphics",
+    "lobby/*",
     "server",
 ]
 
-[profile.release]
+[profile.release-wasm]
+inherits = "release"
 lto = true
 opt-level = "z"

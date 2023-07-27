@@ -2,7 +2,8 @@ use std::marker::PhantomData;
 
 use bevy_app::prelude::{App, Plugin, Update};
 use bevy_ecs::prelude::{
-    in_state, not, IntoSystem, IntoSystemConfigs, OnEnter, OnExit, States, SystemSet,
+    in_state, not, IntoSystem, IntoSystemConfigs, IntoSystemSetConfig, OnEnter, OnExit, States,
+    SystemSet,
 };
 use bevy_math::prelude::Vec2;
 
@@ -93,34 +94,35 @@ where
         }
 
         // in all cases, add all the gameplay systems to the defined SystemSet
-        app.add_systems(
-            Update,
-            (
+        app.configure_set(Update, self.set.run_if(in_state(self.active_screen)))
+            .add_systems(
+                Update,
                 (
-                    systems::scene::attach_ball_physics_components,
-                    systems::scene::attach_fielder_physics_components,
-                    systems::scene::attach_batter_physics_components,
-                    systems::scene::attach_boundary_physics_components,
-                    systems::scene::attach_wicket_physics_components,
-                ),
-                self.tick_system.pipe(schedule::run_core_game_loop),
+                    (
+                        systems::scene::attach_ball_physics_components,
+                        systems::scene::attach_fielder_physics_components,
+                        systems::scene::attach_batter_physics_components,
+                        systems::scene::attach_boundary_physics_components,
+                        systems::scene::attach_wicket_physics_components,
+                    ),
+                    self.tick_system.pipe(schedule::run_core_game_loop),
+                )
+                    .chain()
+                    .in_set(self.set)
+                    .run_if(not(in_state(GamePhase::GameOver))),
             )
-                .chain()
-                .in_set(self.set)
-                .run_if(not(in_state(GamePhase::GameOver))),
-        )
-        .add_systems(
-            OnEnter(self.active_screen),
-            systems::scene::spawn_scene.in_set(self.set),
-        )
-        .add_systems(
-            OnExit(self.active_screen),
-            (
-                systems::scene::despawn_scene,
-                systems::scene::deactivate_game_phase,
-                systems::scene::cleanup_resources,
+            .add_systems(
+                OnEnter(self.active_screen),
+                systems::scene::spawn_scene.in_set(self.set),
             )
-                .in_set(self.set),
-        );
+            .add_systems(
+                OnExit(self.active_screen),
+                (
+                    systems::scene::despawn_scene,
+                    systems::scene::deactivate_game_phase,
+                    systems::scene::cleanup_resources,
+                )
+                    .in_set(self.set),
+            );
     }
 }

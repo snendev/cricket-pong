@@ -9,10 +9,12 @@ use naia_bevy_client::{
 };
 
 use cricket_pong_game::base::{
-    batter::{Bat, Batter},
-    fielder::{Fielder, FielderPosition, FielderRing},
+    components::{
+        batter::Batter,
+        fielder::{Fielder, FielderPosition, FielderRing},
+        player::{PlayerOne, PlayerTwo},
+    },
     protocol::{channels::PlayerAssignmentChannel, messages::PlayerAssignmentMessage},
-    Player,
 };
 
 use super::{

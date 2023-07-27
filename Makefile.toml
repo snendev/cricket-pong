@@ -5,7 +5,7 @@ workspace = false
 
 [tasks.build-wasm-release]
 command = "cargo"
-args = ["build", "-p", "*_app_wasm", "--target", "wasm32-unknown-unknown", "--release"]
+args = ["build", "-p", "*_app_wasm", "--target", "wasm32-unknown-unknown", "--release-wasm"]
 workspace = false
 
 [tasks.build-web]

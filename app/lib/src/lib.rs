@@ -1,20 +1,24 @@
 use bevy::prelude::{
-    in_state, App, Commands, DefaultPlugins, IntoSystemSetConfig, Local, OnEnter, PluginGroup, Res,
-    States, SystemSet, Update, Window, WindowPlugin,
+    App, Commands, DefaultPlugins, Local, OnEnter, PluginGroup, Res, States, SystemSet, Window,
+    WindowPlugin,
 };
 
 use cricket_pong_controls::{Controller, PlayerControllerPlugin};
 use cricket_pong_game::{
-    base::components::player::{PlayerOne, PlayerTwo, Position},
+    base::components::player::{PlayerOne, PlayerTwo},
     Actions, GamePhase, GameplayPlugin,
 };
 use cricket_pong_graphics::GraphicsPlugin;
-use home::HomeScreenPlugin;
 
 mod home;
+use home::HomeScreenPlugin;
+
+mod networking;
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
 pub struct LocalGameplaySet;
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
+pub struct OnlineGameplaySet;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, States)]
 enum AppScreen {
@@ -24,12 +28,12 @@ enum AppScreen {
     LocalGame,
     // ** TODO:
     // AIGame,
-    // OnlineGame,
+    OnlineGame,
 }
 
 fn spawn_local_players(mut commands: Commands) {
-    commands.spawn((Position::Batter, PlayerOne, Controller::One));
-    commands.spawn((Position::Fielder, PlayerTwo, Controller::Two));
+    commands.spawn((PlayerOne, Controller::One));
+    commands.spawn((PlayerTwo, Controller::Two));
 }
 
 fn yield_local_ticks(actions: Res<Actions>, mut tick: Local<u16>) -> Vec<(u16, Actions)> {
@@ -49,14 +53,21 @@ pub fn run_app(canvas: Option<String>) {
             ..Default::default()
         }))
         .add_plugins(HomeScreenPlugin)
-        .configure_set(
-            Update,
-            LocalGameplaySet.run_if(in_state(AppScreen::LocalGame)),
-        )
         .add_plugins(GameplayPlugin::new(
             LocalGameplaySet,
             AppScreen::LocalGame,
             yield_local_ticks,
+        ))
+        .add_plugins(networking::NetworkPlugin)
+        .add_plugins(GameplayPlugin::new(
+            OnlineGameplaySet,
+            networking::ConnectionState::InGame,
+            networking::send_and_prepare_inputs,
+        ))
+        .add_plugins(GameplayPlugin::new(
+            OnlineGameplaySet,
+            networking::ConnectionState::InGame,
+            networking::receive_update_component_events,
         ))
         .add_plugins((
             PlayerControllerPlugin,

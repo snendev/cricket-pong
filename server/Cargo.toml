@@ -9,6 +9,7 @@ publish = false
 
 [dependencies]
 cricket_pong_game = { path = "../game" }
+common_lobby_server = { path = "../lobby/server" }
 bevy_app = { version = "0.11" }
 bevy_core = { version = "0.11" }
 bevy_ecs = { version = "0.11" }

@@ -3,7 +3,7 @@ use bevy_log::info;
 use naia_bevy_server::{transport::webrtc, Server};
 
 pub fn init(mut server: Server) {
-    info!("Starting bingo server");
+    info!("Starting Cricket Pong server");
 
     let server_addresses = webrtc::ServerAddrs::new(
         "127.0.0.1:14191"

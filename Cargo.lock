@@ -1694,6 +1694,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "common_lobby_protocol"
+version = "0.1.0"
+dependencies = [
+ "bevy_ecs",
+ "naia-bevy-shared",
+]
+
+[[package]]
+name = "common_lobby_server"
+version = "0.1.0"
+dependencies = [
+ "bevy_app",
+ "bevy_ecs",
+ "bevy_log",
+ "common_lobby_protocol",
+ "naia-bevy-server",
+ "naia-shared",
+]
+
+[[package]]
 name = "concurrent-queue"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1921,6 +1941,7 @@ dependencies = [
  "bevy_math",
  "bevy_rapier2d",
  "bevy_transform",
+ "common_lobby_protocol",
  "naia-bevy-shared",
 ]
 
@@ -1973,6 +1994,7 @@ dependencies = [
  "bevy_ecs",
  "bevy_log",
  "bevy_utils",
+ "common_lobby_server",
  "cricket_pong_game",
  "naia-bevy-server",
 ]

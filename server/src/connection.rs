@@ -67,7 +67,7 @@ pub fn disconnect_events(
     mut event_reader: EventReader<DisconnectEvent>,
 ) {
     for DisconnectEvent(user_key, user) in event_reader.iter() {
-        info!("bingo Server disconnected from: {:?}", user.address);
+        info!("Cricket Pong Server disconnected from: {:?}", user.address);
 
         if let Some(entity) = user_entities.remove(user_key) {
             let room_keys = {
@@ -84,6 +84,6 @@ pub fn disconnect_events(
 
 pub fn error_events(mut event_reader: EventReader<ErrorEvent>) {
     for ErrorEvent(error) in event_reader.iter() {
-        info!("bingo Server Error: {:?}", error);
+        info!("Cricket Pong Server Error: {:?}", error);
     }
 }

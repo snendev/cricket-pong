@@ -18,6 +18,11 @@ fn home_menu(mut egui_ctx: EguiContexts, mut screen_state: ResMut<NextState<AppS
                         screen_state.set(AppScreen::LocalGame);
                     }
                 });
+                ui.allocate_ui(Vec2::new(200., 80.), |ui| {
+                    if ui.button("Play Online").clicked() {
+                        screen_state.set(AppScreen::OnlineGame);
+                    }
+                });
             });
         });
     });

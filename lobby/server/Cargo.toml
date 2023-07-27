@@ -1,0 +1,15 @@
+[package]
+name = "common_lobby_server"
+version = "0.1.0"
+authors = ["Sean Sullivan <me@snen.dev>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+common_lobby_protocol = { path = "../protocol" }
+naia-shared = { git = "https://github.com/anellie/naia", branch = "bevy-0.11"  }
+naia-bevy-server = { git = "https://github.com/anellie/naia", branch = "bevy-0.11"  }
+bevy_app = { version = "0.11", default-features=false }
+bevy_ecs = { version = "0.11", default-features=false }
+bevy_log = { version = "0.11", default-features=false }

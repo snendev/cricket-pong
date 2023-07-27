@@ -8,10 +8,11 @@ use cricket_pong_base::{
         boundary::{Boundary, BoundaryBundle},
         fielder::{Fielder, FielderBundle, FielderPosition, FielderRing, FielderTrack},
         physics::{ExternalImpulse, Transform, Velocity},
-        player::{PlayerOne, PlayerTwo},
+        player::{PlayerOne, PlayerTwo, Position},
         scoreboard::Scoreboard,
         wicket::{Wicket, WicketBundle},
     },
+    lobby::components::{GameInstance, GameLobby},
 };
 
 use crate::{
@@ -22,39 +23,76 @@ use crate::{
     GamePhase,
 };
 
-// should be run OnEnter(MyGameState)
-pub(crate) fn spawn_scene(mut commands: Commands, mut state: ResMut<NextState<GamePhase>>) {
-    // spawn ball
-    commands.spawn(BallBundle::default());
+pub(crate) fn spawn_scene(
+    mut commands: Commands,
+    mut state: ResMut<NextState<GamePhase>>,
+    added_games_query: Query<&GameInstance, Added<GameLobby>>,
+) {
+    for instance in added_games_query.iter() {
+        // spawn ball
+        commands.spawn((BallBundle::default(), instance.clone()));
 
-    // spawn batter
-    commands.spawn(BatterBundle::default());
+        // spawn batter
+        commands.spawn((BatterBundle::default(), instance.clone()));
 
-    // spawn fielders
-    commands.spawn_batch([
-        FielderBundle::new(FielderPosition::Top, FielderRing::Outfield),
-        FielderBundle::new(FielderPosition::Right, FielderRing::Outfield),
-        FielderBundle::new(FielderPosition::Bottom, FielderRing::Outfield),
-        FielderBundle::new(FielderPosition::Left, FielderRing::Outfield),
-        FielderBundle::new(FielderPosition::Top, FielderRing::Infield),
-        FielderBundle::new(FielderPosition::Right, FielderRing::Infield),
-        FielderBundle::new(FielderPosition::Bottom, FielderRing::Infield),
-        FielderBundle::new(FielderPosition::Left, FielderRing::Infield),
-    ]);
+        // spawn fielders
+        commands.spawn_batch([
+            (
+                FielderBundle::new(FielderPosition::Top, FielderRing::Outfield),
+                instance.clone(),
+            ),
+            (
+                FielderBundle::new(FielderPosition::Right, FielderRing::Outfield),
+                instance.clone(),
+            ),
+            (
+                FielderBundle::new(FielderPosition::Bottom, FielderRing::Outfield),
+                instance.clone(),
+            ),
+            (
+                FielderBundle::new(FielderPosition::Left, FielderRing::Outfield),
+                instance.clone(),
+            ),
+            (
+                FielderBundle::new(FielderPosition::Top, FielderRing::Infield),
+                instance.clone(),
+            ),
+            (
+                FielderBundle::new(FielderPosition::Right, FielderRing::Infield),
+                instance.clone(),
+            ),
+            (
+                FielderBundle::new(FielderPosition::Bottom, FielderRing::Infield),
+                instance.clone(),
+            ),
+            (
+                FielderBundle::new(FielderPosition::Left, FielderRing::Infield),
+                instance.clone(),
+            ),
+        ]);
 
-    // spawn fielder tracks
-    commands.spawn_batch([FielderTrack::infield(), FielderTrack::outfield()]);
+        // spawn fielder tracks
+        commands.spawn_batch([
+            (FielderTrack::infield(), instance.clone()),
+            (FielderTrack::outfield(), instance.clone()),
+        ]);
 
-    // spawn wicket
-    commands.spawn(WicketBundle::default());
+        // spawn wicket
+        commands.spawn((WicketBundle::default(), instance.clone()));
 
-    // spawn boundary
-    commands.spawn(BoundaryBundle::default());
+        // spawn boundary
+        commands.spawn((BoundaryBundle::default(), instance.clone()));
 
-    // spawn scoreboard
-    commands.spawn(Scoreboard::default());
+        // spawn scoreboard
+        commands.spawn((Scoreboard::default(), instance.clone()));
 
-    state.set(GamePhase::Bowling);
+        // spawn players
+        commands.spawn((PlayerOne, Position::Batter, instance.clone()));
+        commands.spawn((PlayerTwo, Position::Fielder, instance.clone()));
+
+        todo!();
+        state.set(GamePhase::Bowling);
+    }
 }
 
 pub(crate) fn attach_ball_physics_components(

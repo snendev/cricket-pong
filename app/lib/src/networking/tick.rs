@@ -1,10 +1,10 @@
-use bevy::prelude::{EventReader, Query, ResMut};
+use bevy::prelude::{info, EventReader, Query, ResMut};
 
 use naia_bevy_client::{events::ClientTickEvent, Client};
 
 use cricket_pong_game::base::{
     actions::Actions,
-    protocol::{channels::PlayerInputChannel, messages::ActionMessage},
+    protocol::{channels::PlayerActionsChannel, messages::ActionMessage},
 };
 
 use super::{components::SourceOf, resources::TickHistory};
@@ -19,13 +19,14 @@ pub fn send_and_prepare_inputs(
     let mut ticks = Vec::new();
 
     for ClientTickEvent(client_tick) in tick_reader.iter() {
+        info!("Client tick {}", client_tick);
         let mut predicted_actions = Actions::default();
 
         for (entity, action) in player_actions.0.drain(..) {
             // Send each command to server
-            let mut input_message = ActionMessage::new(Some(action));
+            let mut input_message = ActionMessage::new(Some(action.clone()));
             input_message.entity.set(&client, &entity);
-            client.send_tick_buffer_message::<PlayerInputChannel, ActionMessage>(
+            client.send_tick_buffer_message::<PlayerActionsChannel, ActionMessage>(
                 client_tick,
                 &input_message,
             );
