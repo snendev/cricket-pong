@@ -119,7 +119,12 @@ pub(crate) fn consume_actions(
                                     Batter::SWING_VELOCITY
                                 }
                             };
-                        bat.swing_timer = Some(Batter::SWING_TIME);
+                        match movement {
+                            BatterAction::SwingCW | BatterAction::SwingCCW => {
+                                bat.swing_timer = Some(Batter::SWING_TIME);
+                            }
+                            _ => {}
+                        };
                         velocity.angvel = angular_velocity;
                     }
                 }
