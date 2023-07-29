@@ -1,4 +1,4 @@
-use bevy::prelude::{Changed, Commands, Entity, Query, ResMut};
+use bevy::prelude::{debug, Added, Changed, Commands, Entity, Or, Query, ResMut};
 
 use leafwing_input_manager::{prelude::ActionState, InputManagerBundle};
 
@@ -37,9 +37,16 @@ pub(crate) fn queue_inputs(
 
 pub(crate) fn sync_controllers(
     mut commands: Commands,
-    player_query: Query<(Entity, &Position, &Controller), Changed<Position>>,
+    player_query: Query<
+        (Entity, &Position, &Controller),
+        Or<(Changed<Position>, Added<Controller>)>,
+    >,
 ) {
     for (entity, position, controller) in player_query.iter() {
+        debug!(
+            "Attaching controller {} position {} to entity ({:?})",
+            controller, position, entity
+        );
         let mut builder = commands.entity(entity);
         match (position, controller) {
             (Position::Fielder, Controller::One) => {

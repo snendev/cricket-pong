@@ -15,6 +15,7 @@ pub mod connection;
 pub mod init;
 pub mod tick;
 
+// TODO: maybe use common_lobby version?
 #[derive(Resource, Default)]
 pub struct UserEntities {
     user_to_entity_map: HashMap<UserKey, Entity>,
@@ -76,10 +77,6 @@ impl Plugin for ServerPlugin {
                     .after(TickSet)
                     .in_set(ReceiveEvents),
             )
-            .add_plugins(GameplayPlugin::new(
-                TickSet,
-                ServerState::Active,
-                tick::tick_events,
-            ));
+            .add_plugins(GameplayPlugin::new(TickSet, tick::tick_events));
     }
 }

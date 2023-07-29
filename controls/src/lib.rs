@@ -21,10 +21,16 @@ pub use bundles::{
 
 mod systems;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub enum Controller {
     One,
     Two,
+}
+
+impl std::fmt::Display for Controller {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, SystemSet)]

@@ -1,15 +1,18 @@
-use bevy_app::{prelude::App, Startup};
-use bevy_ecs::prelude::{Commands, Local, Res, States, SystemSet};
+use bevy_app::prelude::{App, Startup, Update};
+use bevy_ecs::prelude::{Added, Commands, Entity, Local, OnExit, Query, Res, States, SystemSet};
 
 use bevy_rapier2d::render::RapierDebugRenderPlugin;
 
 use bevy_geppetto::Test;
 
-use cricket_pong_base::components::player::{PlayerOne, PlayerTwo, Position};
+use cricket_pong_base::{
+    components::player::{PlayerOne, PlayerTwo},
+    lobby::components::{GameInstance, GameLobby},
+};
 use cricket_pong_controls::{Controller, PlayerControllerPlugin};
 use cricket_pong_graphics::GraphicsPlugin;
 
-use cricket_pong_game::{Actions, GamePhase, GameplayPlugin};
+use cricket_pong_game::{Actions, GameplayPlugin};
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
 pub struct GameplaySet;
@@ -17,19 +20,36 @@ pub struct GameplaySet;
 pub enum TestState {
     #[default]
     Test,
-    Gameover,
     Complete,
 }
 
-fn spawn_players(mut commands: Commands) {
-    commands.spawn((Position::Batter, PlayerOne, Controller::One));
-    commands.spawn((Position::Fielder, PlayerTwo, Controller::Two));
+fn spawn_lobby(mut commands: Commands) {
+    commands.spawn((GameLobby::default(), GameInstance::new(0)));
+}
+
+fn attach_player_controllers(
+    mut commands: Commands,
+    player_one_controller: Query<Entity, Added<PlayerOne>>,
+    player_two_controller: Query<Entity, Added<PlayerTwo>>,
+) {
+    for entity in player_one_controller.iter() {
+        commands.entity(entity).insert(Controller::One);
+    }
+    for entity in player_two_controller.iter() {
+        commands.entity(entity).insert(Controller::Two);
+    }
 }
 
 fn yield_local_ticks(actions: Res<Actions>, mut tick: Local<u16>) -> Vec<(u16, Actions)> {
     let result = (*tick, actions.clone());
     *tick += 1;
     vec![result]
+}
+
+fn unload_lobby(mut lobby_query: Query<&mut GameLobby>) {
+    for mut lobby in lobby_query.iter_mut() {
+        lobby.unload();
+    }
 }
 
 fn main() {
@@ -39,13 +59,15 @@ fn main() {
             app.add_state::<TestState>()
                 .add_plugins((
                     RapierDebugRenderPlugin::default(),
-                    GameplayPlugin::new(GameplaySet, TestState::Test, yield_local_ticks),
+                    GameplayPlugin::new(GameplaySet, yield_local_ticks),
                 ))
                 .add_plugins((
-                    GraphicsPlugin::new(TestState::Complete, GamePhase::GameOver),
+                    GraphicsPlugin::new(TestState::Complete),
                     PlayerControllerPlugin,
                 ))
-                .add_systems(Startup, spawn_players);
+                .add_systems(Startup, spawn_lobby)
+                .add_systems(Update, attach_player_controllers)
+                .add_systems(OnExit(TestState::Test), unload_lobby);
         },
     }
     .run();

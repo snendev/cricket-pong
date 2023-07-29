@@ -11,5 +11,8 @@ pub mod physics;
 // player
 pub mod player;
 
+// game phase
+pub mod phase;
+
 // scoreboard
 pub mod scoreboard;

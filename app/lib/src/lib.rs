@@ -53,25 +53,19 @@ pub fn run_app(canvas: Option<String>) {
             ..Default::default()
         }))
         .add_plugins(HomeScreenPlugin)
-        .add_plugins(GameplayPlugin::new(
-            LocalGameplaySet,
-            AppScreen::LocalGame,
-            yield_local_ticks,
-        ))
+        .add_plugins(GameplayPlugin::new(LocalGameplaySet, yield_local_ticks))
         .add_plugins(networking::NetworkPlugin)
         .add_plugins(GameplayPlugin::new(
             OnlineGameplaySet,
-            networking::ConnectionState::InGame,
             networking::send_and_prepare_inputs,
         ))
         .add_plugins(GameplayPlugin::new(
             OnlineGameplaySet,
-            networking::ConnectionState::InGame,
             networking::receive_update_component_events,
         ))
         .add_plugins((
             PlayerControllerPlugin,
-            GraphicsPlugin::new(AppScreen::MainMenu, GamePhase::GameOver),
+            GraphicsPlugin::new(AppScreen::MainMenu),
         ))
         .add_systems(OnEnter(AppScreen::LocalGame), spawn_local_players)
         .run();

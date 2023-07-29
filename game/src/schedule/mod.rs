@@ -1,7 +1,5 @@
 use bevy_ecs::{
-    prelude::{
-        in_state, Condition, In, IntoSystemConfigs, IntoSystemSetConfig, Schedule, SystemSet, World,
-    },
+    prelude::{In, IntoSystemConfigs, IntoSystemSetConfig, Schedule, SystemSet, World},
     schedule::ScheduleLabel,
 };
 use bevy_transform::prelude::Transform;
@@ -15,10 +13,7 @@ use cricket_pong_base::{
     },
 };
 
-use crate::{
-    systems::{scoring, sync, tick},
-    GamePhase,
-};
+use crate::systems::{scoring, sync, tick};
 
 mod physics;
 
@@ -44,13 +39,9 @@ pub(crate) fn build_core_tick_schedule() -> (CoreTickSchedule, Schedule) {
             SyncInternalsSet.before(tick::ActionsSet),
         ))
         .add_systems((
-            (
-                tick::track_bowler_transform.run_if(in_state(GamePhase::Bowling)),
-                tick::consume_actions,
-            )
+            (tick::track_bowler_transform, tick::consume_actions)
                 .chain()
-                .in_set(tick::ActionsSet)
-                .run_if(in_state(GamePhase::Bowling).or_else(in_state(GamePhase::Active))),
+                .in_set(tick::ActionsSet),
             // TODO: Sync directionality?
             (
                 sync::sync_components::<SyncTransform, Transform>,
@@ -64,9 +55,7 @@ pub(crate) fn build_core_tick_schedule() -> (CoreTickSchedule, Schedule) {
                 sync::sync_components::<ExternalImpulse, SyncImpulse>,
             )
                 .in_set(SyncInternalsSet),
-            scoring::register_goals
-                .in_set(scoring::ScoringSet)
-                .run_if(in_state(GamePhase::Active)),
+            scoring::register_goals.in_set(scoring::ScoringSet),
         ));
     (CoreTickSchedule, schedule)
 }

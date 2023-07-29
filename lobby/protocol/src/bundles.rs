@@ -11,7 +11,7 @@ pub struct GameBundle {
 impl GameBundle {
     pub fn new(id: u64) -> Self {
         GameBundle {
-            lobby: GameLobby,
+            lobby: GameLobby::default(),
             instance: GameInstance::new(id),
         }
     }

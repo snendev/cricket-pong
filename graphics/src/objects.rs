@@ -1,7 +1,7 @@
 use bevy::{
     prelude::{
-        shape, Added, App, Assets, Color, Commands, Entity, IntoSystemConfigs, Mesh, Plugin,
-        PostUpdate, Query, ResMut, SystemSet, Transform, Vec2,
+        shape, Added, App, Assets, BuildChildren, Color, Commands, Entity, IntoSystemConfigs, Mesh,
+        Plugin, PostUpdate, Query, ResMut, SystemSet, Transform, Vec2,
     },
     sprite::{ColorMaterial, MaterialMesh2dBundle},
 };
@@ -103,23 +103,31 @@ fn setup_batter_shape(
             radius: Batter::RADIUS,
             ..Default::default()
         };
-        // batter ring
-        commands.spawn((
-            ShapeBundle {
-                path: GeometryBuilder::build_as(&shape),
-                ..Default::default()
-            },
-            Stroke::new(Color::BLACK, 4.),
-        ));
         // bat itself
-        commands.entity(entity).insert((MaterialMesh2dBundle {
-            mesh: meshes
-                .add(shape::Quad::new(Vec2::new(Batter::HWIDTH * 2., Batter::HDEPTH * 2.)).into())
-                .into(),
-            material: materials.add(Color::rgb(0.59, 0.29, 0.).into()),
-            transform: *transform,
-            ..Default::default()
-        },));
+        commands
+            .entity(entity)
+            .insert(MaterialMesh2dBundle {
+                mesh: meshes
+                    .add(
+                        shape::Quad::new(Vec2::new(Batter::HWIDTH * 2., Batter::HDEPTH * 2.))
+                            .into(),
+                    )
+                    .into(),
+                material: materials.add(Color::rgb(0.59, 0.29, 0.).into()),
+                transform: *transform,
+                ..Default::default()
+            })
+            .with_children(|parent| {
+                // batter ring
+                parent.spawn((
+                    ShapeBundle {
+                        path: GeometryBuilder::build_as(&shape),
+                        transform: Transform::from_xyz(-Batter::RADIUS - Batter::HWIDTH, 0., 0.),
+                        ..Default::default()
+                    },
+                    Stroke::new(Color::BLACK, 4.),
+                ));
+            });
     }
 }
 

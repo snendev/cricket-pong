@@ -1,5 +1,6 @@
-use bevy_ecs::prelude::{Added, Commands, Entity, NextState, Query, ResMut, With};
+use bevy_ecs::prelude::{Added, Commands, Entity, Query, ResMut};
 
+use bevy_log::debug;
 use cricket_pong_base::{
     actions::Actions,
     components::{
@@ -7,6 +8,7 @@ use cricket_pong_base::{
         batter::{Batter, BatterBundle},
         boundary::{Boundary, BoundaryBundle},
         fielder::{Fielder, FielderBundle, FielderPosition, FielderRing, FielderTrack},
+        phase::GamePhase,
         physics::{ExternalImpulse, Transform, Velocity},
         player::{PlayerOne, PlayerTwo, Position},
         scoreboard::Scoreboard,
@@ -15,20 +17,17 @@ use cricket_pong_base::{
     lobby::components::{GameInstance, GameLobby},
 };
 
-use crate::{
-    objects::{
-        BallPhysicsBundle, BatterPhysicsBundle, BoundaryPhysicsBundle, FielderPhysicsBundle,
-        WicketPhysicsBundle,
-    },
-    GamePhase,
+use crate::objects::{
+    BallPhysicsBundle, BatterPhysicsBundle, BoundaryPhysicsBundle, FielderPhysicsBundle,
+    WicketPhysicsBundle,
 };
 
 pub(crate) fn spawn_scene(
     mut commands: Commands,
-    mut state: ResMut<NextState<GamePhase>>,
-    added_games_query: Query<&GameInstance, Added<GameLobby>>,
+    mut added_games_query: Query<(Entity, &mut GameLobby, &GameInstance), Added<GameLobby>>,
 ) {
-    for instance in added_games_query.iter() {
+    for (lobby_entity, mut lobby, instance) in added_games_query.iter_mut() {
+        debug!("Spawning game entities for instance {}", instance);
         // spawn ball
         commands.spawn((BallBundle::default(), instance.clone()));
 
@@ -90,8 +89,8 @@ pub(crate) fn spawn_scene(
         commands.spawn((PlayerOne, Position::Batter, instance.clone()));
         commands.spawn((PlayerTwo, Position::Fielder, instance.clone()));
 
-        todo!();
-        state.set(GamePhase::Bowling);
+        lobby.activate();
+        commands.entity(lobby_entity).insert(GamePhase::default());
     }
 }
 
@@ -100,6 +99,7 @@ pub(crate) fn attach_ball_physics_components(
     added_ball_query: Query<(Entity, &Transform, &Velocity, &ExternalImpulse), Added<Ball>>,
 ) {
     for (entity, transform, velocity, impulse) in added_ball_query.iter() {
+        debug!("Ball physics components added to entity ({:?})", entity);
         commands.entity(entity).insert(BallPhysicsBundle::new(
             transform.into(),
             velocity.into(),
@@ -113,6 +113,7 @@ pub(crate) fn attach_fielder_physics_components(
     added_fielder_query: Query<(Entity, &Fielder, &Transform, &Velocity), Added<Fielder>>,
 ) {
     for (entity, fielder, transform, velocity) in added_fielder_query.iter() {
+        debug!("Fielder physics components added to entity ({:?})", entity);
         commands.entity(entity).insert(FielderPhysicsBundle::new(
             fielder,
             transform.into(),
@@ -126,6 +127,7 @@ pub(crate) fn attach_batter_physics_components(
     added_batter_query: Query<(Entity, &Transform, &Velocity), Added<Batter>>,
 ) {
     for (entity, transform, velocity) in added_batter_query.iter() {
+        debug!("Batter physics components added to entity ({:?})", entity);
         commands
             .entity(entity)
             .insert(BatterPhysicsBundle::new(transform.into(), velocity.into()));
@@ -137,6 +139,7 @@ pub(crate) fn attach_boundary_physics_components(
     added_boundary_query: Query<(Entity, &Transform), Added<Boundary>>,
 ) {
     for (entity, transform) in added_boundary_query.iter() {
+        debug!("Boundary physics components added to entity ({:?})", entity);
         commands
             .entity(entity)
             .insert(BoundaryPhysicsBundle::new(transform.into()));
@@ -148,59 +151,14 @@ pub(crate) fn attach_wicket_physics_components(
     added_wicket_query: Query<(Entity, &Transform), Added<Wicket>>,
 ) {
     for (entity, transform) in added_wicket_query.iter() {
+        debug!("Wicket physics components added to entity ({:?})", entity);
         commands
             .entity(entity)
             .insert(WicketPhysicsBundle::new(transform.into()));
     }
 }
 
-// should be run OnExit(MyGameState)
-pub(crate) fn despawn_scene(
-    mut commands: Commands,
-    boundary_query: Query<Entity, With<Boundary>>,
-    fielder_query: Query<Entity, With<Fielder>>,
-    fielder_track_query: Query<Entity, With<FielderTrack>>,
-    wicket_query: Query<Entity, With<Wicket>>,
-    batter_query: Query<Entity, With<Batter>>,
-    ball_query: Query<Entity, With<Ball>>,
-    player_one_query: Query<Entity, With<PlayerOne>>,
-    player_two_query: Query<Entity, With<PlayerTwo>>,
-    scoreboard_query: Query<Entity, With<Scoreboard>>,
-) {
-    for entity in boundary_query.iter() {
-        commands.entity(entity).despawn();
-    }
-    for entity in fielder_query.iter() {
-        commands.entity(entity).despawn();
-    }
-    for entity in fielder_track_query.iter() {
-        commands.entity(entity).despawn();
-    }
-    for entity in wicket_query.iter() {
-        commands.entity(entity).despawn();
-    }
-    for entity in batter_query.iter() {
-        commands.entity(entity).despawn();
-    }
-    for entity in ball_query.iter() {
-        commands.entity(entity).despawn();
-    }
-    for entity in player_one_query.iter() {
-        commands.entity(entity).despawn();
-    }
-    for entity in player_two_query.iter() {
-        commands.entity(entity).despawn();
-    }
-    for entity in scoreboard_query.iter() {
-        commands.entity(entity).despawn();
-    }
-}
-
-// should be run OnExit(MyGameState)
-pub(crate) fn deactivate_game_phase(mut state: ResMut<NextState<GamePhase>>) {
-    state.set(GamePhase::Inactive);
-}
-
-pub(crate) fn cleanup_resources(mut actions: ResMut<Actions>) {
+// TODO: where do I put this?
+pub(crate) fn _cleanup_resources(mut actions: ResMut<Actions>) {
     actions.0.clear();
 }

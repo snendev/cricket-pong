@@ -3,6 +3,7 @@ use naia_bevy_shared::{ChannelDirection, ChannelMode, Protocol, ProtocolPlugin, 
 pub mod bundles;
 pub mod components;
 pub mod messages;
+pub mod systems;
 
 pub struct CommonLobbyProtocolPlugin;
 

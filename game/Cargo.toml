@@ -23,7 +23,7 @@ bevy_rapier2d = { version = "0.22" }
 [dev-dependencies]
 cricket_pong_controls = { path = "../controls" }
 cricket_pong_graphics = { path = "../graphics" }
-bevy_geppetto = { git = "https://github.com/snendev/bevy_geppetto.git" }
+bevy_geppetto = { git = "https://github.com/snendev/bevy_geppetto.git", rev = "b42bb4b" }
 
 [dev-dependencies.bevy_rapier2d]
 features = [ "debug-render-2d" ]

@@ -1,15 +1,16 @@
 use bevy::{
     prelude::{
-        in_state, Added, AlignItems, App, BackgroundColor, BuildChildren, ButtonBundle, Changed,
-        ChildBuilder, Color, Commands, Component, DespawnRecursiveExt, Display, Entity,
-        FlexDirection, GridAutoFlow, IntoSystemConfigs, JustifyContent, NextState, NodeBundle,
-        OnEnter, Plugin, PositionType, PostUpdate, Query, ResMut, States, Style, SystemSet, Text,
-        TextBundle, TextStyle, UiRect, Val, With, Without,
+        Added, AlignItems, App, BackgroundColor, BuildChildren, ButtonBundle, Changed,
+        ChildBuilder, Color, Commands, Component, DespawnRecursiveExt, DetectChanges, Display,
+        Entity, FlexDirection, GridAutoFlow, IntoSystemConfigs, JustifyContent, NextState,
+        NodeBundle, OnEnter, Plugin, PositionType, PostUpdate, Query, Ref, ResMut, States, Style,
+        SystemSet, Text, TextBundle, TextStyle, UiRect, Val, With, Without,
     },
     ui::{BorderColor, GridPlacement, GridTrack, Interaction},
 };
 
 use cricket_pong_base::components::{
+    phase::GamePhase,
     player::{Identity, PlayerOne, PlayerTwo, Position},
     scoreboard::Scoreboard,
 };
@@ -243,7 +244,16 @@ fn update_over_tracker(
 #[derive(Component)]
 struct ReturnButton;
 
-fn spawn_gameover_panel(mut commands: Commands, scoreboard_query: Query<&Scoreboard>) {
+fn spawn_gameover_panel(
+    mut commands: Commands,
+    game_query: Query<Ref<GamePhase>>,
+    scoreboard_query: Query<&Scoreboard>,
+) {
+    let Ok(game) = game_query.get_single() else { return; };
+    if !game.is_changed() || *game != GamePhase::GameOver {
+        return;
+    }
+
     let Ok(scoreboard) = scoreboard_query.get_single() else { return };
     let player_one_score = scoreboard.player_score(Identity::One);
     let player_two_score = scoreboard.player_score(Identity::Two);
@@ -385,28 +395,22 @@ fn cleanup_ui(
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, SystemSet)]
 pub struct GameUISet;
 
-pub struct GameUIPlugin<AppScreen: States, GameState: States> {
+pub struct GameUIPlugin<AppScreen: States> {
     return_screen: AppScreen,
-    gameover_state: GameState,
 }
 
-impl<AppScreen, GameState> GameUIPlugin<AppScreen, GameState>
+impl<AppScreen> GameUIPlugin<AppScreen>
 where
     AppScreen: States,
-    GameState: States,
 {
-    pub fn new(return_screen: AppScreen, gameover_state: GameState) -> Self {
-        GameUIPlugin {
-            return_screen,
-            gameover_state,
-        }
+    pub fn new(return_screen: AppScreen) -> Self {
+        GameUIPlugin { return_screen }
     }
 }
 
-impl<AppScreen, GameState> Plugin for GameUIPlugin<AppScreen, GameState>
+impl<AppScreen> Plugin for GameUIPlugin<AppScreen>
 where
     AppScreen: States + Copy,
-    GameState: States + Copy,
 {
     fn build(&self, app: &mut App) {
         app.add_systems(
@@ -420,11 +424,10 @@ where
             )
                 .in_set(GameUISet),
         )
-        .add_systems(OnEnter(self.gameover_state), spawn_gameover_panel)
+        .add_systems(PostUpdate, spawn_gameover_panel)
         .add_systems(
             PostUpdate,
-            build_detect_return_selection_system(self.return_screen)
-                .run_if(in_state(self.gameover_state)),
+            build_detect_return_selection_system(self.return_screen),
         )
         .add_systems(OnEnter(self.return_screen), cleanup_ui);
     }
