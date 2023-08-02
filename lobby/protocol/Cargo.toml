@@ -7,6 +7,7 @@ license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
+bevy_core = { version = "0.11" }
 bevy_ecs = { version = "0.11" }
 bevy_hierarchy = { version = "0.11" }
 bevy_log = { version = "0.11" }

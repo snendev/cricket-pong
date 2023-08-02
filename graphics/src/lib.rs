@@ -1,7 +1,10 @@
-use bevy::prelude::{App, Camera2dBundle, Commands, Plugin, Startup, States, SystemSet};
+use bevy::prelude::{App, Camera2dBundle, Commands, Component, Plugin, Startup, States, SystemSet};
 
 mod objects;
 mod ui;
+
+#[derive(Component)]
+pub struct ShouldRender;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, SystemSet)]
 pub struct GraphicsSet;

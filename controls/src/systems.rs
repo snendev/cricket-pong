@@ -4,7 +4,7 @@ use leafwing_input_manager::{prelude::ActionState, InputManagerBundle};
 
 use cricket_pong_game::base::{
     actions::{Action, Actions},
-    components::player::Position,
+    components::player::{Position, PositionKind},
 };
 
 use crate::{
@@ -45,26 +45,28 @@ pub(crate) fn sync_controllers(
     for (entity, position, controller) in player_query.iter() {
         debug!(
             "Attaching controller {} position {} to entity ({:?})",
-            controller, position, entity
+            controller,
+            position.inner(),
+            entity,
         );
         let mut builder = commands.entity(entity);
-        match (position, controller) {
-            (Position::Fielder, Controller::One) => {
+        match (position.inner(), controller) {
+            (PositionKind::Fielder, Controller::One) => {
                 builder
                     .remove::<InputManagerBundle<BatterControl>>()
                     .insert(FielderControllerBundle::new());
             }
-            (Position::Batter, Controller::One) => {
+            (PositionKind::Batter, Controller::One) => {
                 builder
                     .remove::<InputManagerBundle<FielderControl>>()
                     .insert(BatterControllerBundle::new());
             }
-            (Position::Fielder, Controller::Two) => {
+            (PositionKind::Fielder, Controller::Two) => {
                 builder
                     .remove::<InputManagerBundle<BatterControl>>()
                     .insert(FielderControllerBundle2::new());
             }
-            (Position::Batter, Controller::Two) => {
+            (PositionKind::Batter, Controller::Two) => {
                 builder
                     .remove::<InputManagerBundle<FielderControl>>()
                     .insert(BatterControllerBundle2::new());

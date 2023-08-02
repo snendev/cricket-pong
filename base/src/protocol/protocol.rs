@@ -5,7 +5,7 @@ use naia_bevy_shared::{LinkConditionerConfig, Protocol, ProtocolPlugin};
 use common_lobby_protocol::CommonLobbyProtocolPlugin;
 
 use crate::{
-    components::{ball, batter, boundary, fielder, physics, wicket},
+    components::{ball, batter, boundary, fielder, phase, physics, player, scoreboard, wicket},
     protocol::{channels, messages},
 };
 
@@ -19,11 +19,17 @@ impl ProtocolPlugin for CricketPongProtocolPlugin {
         protocol
             .add_message::<messages::PlayerAssignmentMessage>()
             .add_message::<messages::ActionMessage>()
+            .add_component::<phase::GamePhase>()
             .add_component::<ball::Ball>()
             .add_component::<batter::Batter>()
-            .add_component::<wicket::Wicket>()
-            .add_component::<fielder::Fielder>()
             .add_component::<boundary::Boundary>()
+            .add_component::<fielder::Fielder>()
+            .add_component::<fielder::FielderTrack>()
+            .add_component::<wicket::Wicket>()
+            .add_component::<player::PlayerOne>()
+            .add_component::<player::PlayerTwo>()
+            .add_component::<player::Position>()
+            .add_component::<scoreboard::Scoreboard>()
             .add_component::<physics::Transform>()
             .add_component::<physics::Velocity>()
             .add_component::<physics::ExternalImpulse>();

@@ -22,13 +22,18 @@ use cricket_pong_base::{
     lobby::components::GameInstance,
 };
 
+use crate::ShouldTick;
+
 pub(crate) fn track_bowler_transform(
-    games_query: Query<(&GameInstance, &GamePhase)>,
-    mut balls_query: Query<(&GameInstance, &mut Transform, &mut Velocity), With<Ball>>,
-    fielders_query: Query<(&GameInstance, &Transform, &Fielder), Without<Ball>>,
+    games_query: Query<(&GameInstance, &GamePhase), With<ShouldTick>>,
+    mut balls_query: Query<
+        (&GameInstance, &mut Transform, &mut Velocity),
+        (With<Ball>, With<ShouldTick>),
+    >,
+    fielders_query: Query<(&GameInstance, &Transform, &Fielder), (Without<Ball>, With<ShouldTick>)>,
 ) {
     for (game_instance, phase) in games_query.iter() {
-        if *phase != GamePhase::Bowling {
+        if !phase.is_bowling() {
             continue;
         };
 
@@ -64,18 +69,26 @@ pub(crate) fn consume_actions(
     mut actions: ResMut<Actions>,
     mut game_query: Query<
         (&GameInstance, &mut GamePhase),
-        (Without<Fielder>, Without<Batter>, Without<Ball>),
+        (
+            Without<Fielder>,
+            Without<Batter>,
+            Without<Ball>,
+            With<ShouldTick>,
+        ),
     >,
-    player_query: Query<&GameInstance, Or<(With<PlayerOne>, With<PlayerTwo>)>>,
+    player_query: Query<&GameInstance, (With<ShouldTick>, Or<(With<PlayerOne>, With<PlayerTwo>)>)>,
     mut fielders_query: Query<
         (&GameInstance, &Fielder, &mut Velocity),
-        (Without<Batter>, Without<Ball>),
+        (Without<Batter>, Without<Ball>, With<ShouldTick>),
     >,
     mut batters_query: Query<
         (&GameInstance, &mut Batter, &mut Velocity),
-        (Without<Fielder>, Without<Ball>),
+        (Without<Fielder>, Without<Ball>, With<ShouldTick>),
     >,
-    mut ball_query: Query<(&GameInstance, &mut ExternalImpulse, &Transform), With<Ball>>,
+    mut ball_query: Query<
+        (&GameInstance, &mut ExternalImpulse, &Transform),
+        (With<Ball>, With<ShouldTick>),
+    >,
     time: Res<Time>,
 ) {
     for (_, _, mut velocity) in fielders_query.iter_mut() {
@@ -112,7 +125,7 @@ pub(crate) fn consume_actions(
 
         match action {
             Action::Fielder(FielderAction::Bowl) => {
-                if *phase != GamePhase::Bowling {
+                if !phase.is_bowling() {
                     continue;
                 };
                 let Some((mut impulse, transform)) = ball_query.iter_mut().find_map(|(instance, impulse, transform)| {
@@ -128,7 +141,7 @@ pub(crate) fn consume_actions(
                 *impulse.linear = Vec2::from(
                     &(BevyVec2::from(&*impulse.linear) + direction_vector * Fielder::BOWL_IMPULSE),
                 );
-                *phase = GamePhase::Active;
+                phase.set_active();
             }
             Action::Fielder(movement) => {
                 let ring_to_match = match movement {

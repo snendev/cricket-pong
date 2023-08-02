@@ -1,3 +1,4 @@
+use bevy_core::Name;
 use bevy_ecs::prelude::{Bundle, Component};
 use bevy_math::{Quat, Vec3};
 use bevy_transform::prelude::Transform as BevyTransform;
@@ -33,11 +34,37 @@ pub struct FielderTrack {
 
 impl FielderTrack {
     pub fn infield() -> Self {
-        Self::new_complete(FielderRing::Infield)
+        FielderTrack::new_complete(FielderRing::Infield)
     }
 
     pub fn outfield() -> Self {
-        Self::new_complete(FielderRing::Outfield)
+        FielderTrack::new_complete(FielderRing::Outfield)
+    }
+
+    pub fn name() -> Name {
+        Name::new("FielderTrack")
+    }
+}
+
+#[derive(Bundle)]
+pub struct FielderTrackBundle {
+    name: Name,
+    track: FielderTrack,
+}
+
+impl FielderTrackBundle {
+    pub fn infield() -> Self {
+        FielderTrackBundle {
+            name: FielderTrack::name(),
+            track: FielderTrack::infield(),
+        }
+    }
+
+    pub fn outfield() -> Self {
+        FielderTrackBundle {
+            name: FielderTrack::name(),
+            track: FielderTrack::outfield(),
+        }
     }
 }
 
@@ -85,7 +112,7 @@ impl Fielder {
     pub const OUTFIELD_HWIDTH: f32 = 50.;
     pub const HDEPTH: f32 = 2.;
 
-    fn new(position: FielderPosition, ring: FielderRing) -> Self {
+    pub fn new(position: FielderPosition, ring: FielderRing) -> Self {
         Fielder::new_complete(position, ring)
     }
 
@@ -95,10 +122,15 @@ impl Fielder {
             FielderRing::Outfield => Self::OUTFIELD_HWIDTH,
         }
     }
+
+    pub fn name() -> Name {
+        Name::new("Fielder")
+    }
 }
 
 #[derive(Bundle)]
 pub struct FielderBundle {
+    name: Name,
     fielder: Fielder,
     transform: Transform,
     velocity: Velocity,
@@ -109,6 +141,7 @@ impl FielderBundle {
         let translation = position.default_translation(ring.radius());
         let rotation = position.default_rotation();
         FielderBundle {
+            name: Fielder::name(),
             fielder: Fielder::new(position, ring),
             transform: Transform::from(
                 &BevyTransform::from_translation(translation).with_rotation(rotation),

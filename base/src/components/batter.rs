@@ -1,3 +1,4 @@
+use bevy_core::Name;
 use bevy_ecs::prelude::{Bundle, Component};
 use bevy_transform::prelude::Transform as BevyTransform;
 
@@ -24,10 +25,15 @@ impl Batter {
     pub const HWIDTH: f32 = 25.;
     pub const HDEPTH: f32 = 5.;
     pub const MASS: f32 = 50.;
+
+    pub fn name() -> Name {
+        Name::new("Batter")
+    }
 }
 
 #[derive(Bundle)]
 pub struct BatterBundle {
+    name: Name,
     batter: Batter,
     transform: Transform,
     velocity: Velocity,
@@ -36,6 +42,7 @@ pub struct BatterBundle {
 impl Default for BatterBundle {
     fn default() -> Self {
         BatterBundle {
+            name: Batter::name(),
             batter: Batter::default(),
             transform: Transform::from(&BevyTransform::from_xyz(
                 Batter::RADIUS + Batter::HWIDTH,

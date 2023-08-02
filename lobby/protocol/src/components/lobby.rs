@@ -1,3 +1,4 @@
+use bevy_core::Name;
 use bevy_ecs::prelude::Component;
 
 use naia_bevy_shared::{Property, Replicate, Serde};
@@ -39,5 +40,9 @@ impl GameLobby {
 
     pub fn unload(&mut self) {
         *self.state = LobbyState::Unloading;
+    }
+
+    pub fn name() -> Name {
+        Name::new("GameLobby")
     }
 }

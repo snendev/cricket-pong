@@ -14,6 +14,9 @@ impl ProtocolPlugin for CommonLobbyProtocolPlugin {
                 ChannelDirection::Bidirectional,
                 ChannelMode::OrderedReliable(ReliableSettings::default()),
             )
-            .add_message::<messages::LobbyMessage>();
+            .add_message::<messages::LobbyMessage>()
+            .add_component::<components::GameInstance>()
+            .add_component::<components::GameLobby>()
+            .add_component::<components::Player>();
     }
 }

@@ -1,5 +1,6 @@
 use bevy_ecs::{
     prelude::{In, IntoSystemConfigs, IntoSystemSetConfig, Schedule, SystemSet, World},
+    query::With,
     schedule::ScheduleLabel,
 };
 use bevy_transform::prelude::Transform;
@@ -13,9 +14,13 @@ use cricket_pong_base::{
     },
 };
 
-use crate::systems::{scoring, sync, tick};
+use crate::{
+    systems::{scoring, sync, tick},
+    ShouldTick,
+};
 
 mod physics;
+pub(crate) use physics::InstanceFilter;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub(crate) struct SyncPhysicsSet;
@@ -32,7 +37,6 @@ pub(crate) fn build_core_tick_schedule() -> (CoreTickSchedule, Schedule) {
         .configure_sets((
             tick::ActionsSet.before(physics::PhysicsSet),
             scoring::ScoringSet.after(physics::PhysicsSet),
-            // TODO: Sync directionality?
             SyncPhysicsSet
                 .after(tick::ActionsSet)
                 .before(physics::PhysicsSet),
@@ -42,17 +46,16 @@ pub(crate) fn build_core_tick_schedule() -> (CoreTickSchedule, Schedule) {
             (tick::track_bowler_transform, tick::consume_actions)
                 .chain()
                 .in_set(tick::ActionsSet),
-            // TODO: Sync directionality?
             (
-                sync::sync_components::<SyncTransform, Transform>,
-                sync::sync_components::<SyncVelocity, Velocity>,
-                sync::sync_components::<SyncImpulse, ExternalImpulse>,
+                sync::sync_components::<SyncTransform, Transform, With<ShouldTick>>,
+                sync::sync_components::<SyncVelocity, Velocity, With<ShouldTick>>,
+                sync::sync_components::<SyncImpulse, ExternalImpulse, With<ShouldTick>>,
             )
                 .in_set(SyncPhysicsSet),
             (
-                sync::sync_components::<Transform, SyncTransform>,
-                sync::sync_components::<Velocity, SyncVelocity>,
-                sync::sync_components::<ExternalImpulse, SyncImpulse>,
+                sync::sync_components::<Transform, SyncTransform, With<ShouldTick>>,
+                sync::sync_components::<Velocity, SyncVelocity, With<ShouldTick>>,
+                sync::sync_components::<ExternalImpulse, SyncImpulse, With<ShouldTick>>,
             )
                 .in_set(SyncInternalsSet),
             scoring::register_goals.in_set(scoring::ScoringSet),

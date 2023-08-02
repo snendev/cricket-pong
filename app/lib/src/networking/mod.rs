@@ -9,7 +9,7 @@ use cricket_pong_game::base::protocol::protocol;
 
 use crate::AppScreen;
 
-pub(crate) mod components;
+pub mod components;
 pub(crate) mod resources;
 
 mod connection;
@@ -19,7 +19,7 @@ mod rollback;
 pub(crate) use rollback::receive_update_component_events;
 
 mod tick;
-pub(crate) use tick::send_and_prepare_inputs;
+pub use tick::send_and_prepare_inputs;
 
 use self::resources::TickHistory;
 
@@ -64,7 +64,8 @@ impl Plugin for NetworkPlugin {
                     connection::disconnection_events,
                     connection::rejection_events,
                     events::receive_entity_assignment_message,
-                    events::receive_insert_component_events,
+                    events::handle_insert_position,
+                    events::spawn_predictions,
                 )
                     .run_if(in_state(AppScreen::OnlineGame)),
             );

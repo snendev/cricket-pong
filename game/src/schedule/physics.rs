@@ -1,5 +1,6 @@
 use bevy_ecs::{
     prelude::{IntoSystemConfigs, IntoSystemSetConfigs, Schedule, SystemSet},
+    query::With,
     system::{Query, SystemParam},
 };
 
@@ -10,9 +11,11 @@ use bevy_rapier2d::prelude::{
 
 use cricket_pong_base::lobby::components::GameInstance;
 
+use crate::ShouldTick;
+
 #[derive(SystemParam)]
-pub struct InstanceFilter<'w, 's> {
-    instance: Query<'w, 's, &'static GameInstance>,
+pub(crate) struct InstanceFilter<'w, 's> {
+    instance: Query<'w, 's, &'static GameInstance, With<ShouldTick>>,
 }
 
 impl BevyPhysicsHooks for InstanceFilter<'_, '_> {
@@ -45,19 +48,19 @@ pub(crate) fn build_physics_schedule(mut schedule: Schedule) -> Schedule {
                 .in_set(PhysicsSet),
         )
         .add_systems(
-            RapierPhysicsPlugin::<()>::get_systems(RapierPhysicsSet::SyncBackend)
+            RapierPhysicsPlugin::<InstanceFilter>::get_systems(RapierPhysicsSet::SyncBackend)
                 .in_set(RapierPhysicsSet::SyncBackend),
         )
         .add_systems(
-            RapierPhysicsPlugin::<()>::get_systems(RapierPhysicsSet::SyncBackendFlush)
+            RapierPhysicsPlugin::<InstanceFilter>::get_systems(RapierPhysicsSet::SyncBackendFlush)
                 .in_set(RapierPhysicsSet::SyncBackendFlush),
         )
         .add_systems(
-            RapierPhysicsPlugin::<()>::get_systems(RapierPhysicsSet::StepSimulation)
+            RapierPhysicsPlugin::<InstanceFilter>::get_systems(RapierPhysicsSet::StepSimulation)
                 .in_set(RapierPhysicsSet::StepSimulation),
         )
         .add_systems(
-            RapierPhysicsPlugin::<()>::get_systems(RapierPhysicsSet::Writeback)
+            RapierPhysicsPlugin::<InstanceFilter>::get_systems(RapierPhysicsSet::Writeback)
                 .in_set(RapierPhysicsSet::Writeback),
         );
     schedule

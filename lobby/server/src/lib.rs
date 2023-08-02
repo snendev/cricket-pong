@@ -1,38 +1,34 @@
-use bevy_app::{
-    prelude::{App, Plugin},
-    Update,
+use bevy_app::prelude::{App, Plugin, Update};
+use bevy_ecs::{
+    prelude::SystemSet,
+    schedule::{IntoSystemConfigs, IntoSystemSetConfig},
 };
-use bevy_ecs::prelude::IntoSystemConfigs;
 
 pub mod resources;
+use naia_bevy_server::ReceiveEvents;
+use resources::QueuedUsers;
 
 mod systems;
-
-#[derive(Clone, Copy, Debug, Default, Hash, PartialEq, Eq)]
-struct NoState;
+pub use systems::subscribe_to_game_instances;
 
 pub struct CommonLobbyPlugin;
 
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
+pub struct LobbySet;
+
 impl Plugin for CommonLobbyPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<resources::UserEntityMap>()
-            .init_resource::<resources::LobbyStateMap>()
-            .init_resource::<resources::ReadiedUsers>()
+        app.init_resource::<resources::UserEntities>()
+            .init_resource::<QueuedUsers>()
+            .configure_set(Update, LobbySet.in_set(ReceiveEvents))
             .add_systems(
                 Update,
-                (
-                    (
-                        systems::handle_room_ready,
-                        systems::send_room_start_signal,
-                        systems::handle_room_cleanup,
-                        systems::flush_room_state_updates,
-                    )
-                        .chain(),
-                    systems::receive_state_update_message,
-                    systems::handle_user_join_room,
-                    systems::remove_user,
-                    systems::subscribe_rooms_to_game_instance,
-                ),
+                ((
+                    systems::handle_user_connection,
+                    systems::handle_user_disconnection,
+                    systems::handle_room_cleanup,
+                )
+                    .in_set(LobbySet),),
             );
     }
 }

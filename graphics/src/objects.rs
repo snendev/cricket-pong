@@ -1,7 +1,8 @@
 use bevy::{
     prelude::{
-        shape, Added, App, Assets, BuildChildren, Color, Commands, Entity, IntoSystemConfigs, Mesh,
-        Plugin, PostUpdate, Query, ResMut, SystemSet, Transform, Vec2,
+        debug, shape, Added, App, Assets, BuildChildren, Color, Commands, Entity,
+        IntoSystemConfigs, Mesh, Or, Plugin, PostUpdate, Query, ResMut, SystemSet, Transform, Vec2,
+        With,
     },
     sprite::{ColorMaterial, MaterialMesh2dBundle},
 };
@@ -18,13 +19,23 @@ use cricket_pong_base::components::{
     wicket::Wicket,
 };
 
+use crate::ShouldRender;
+
 fn setup_ball_shape(
     mut commands: Commands,
-    added_ball_query: Query<(Entity, &Transform), Added<Ball>>,
+    added_ball_query: Query<
+        (Entity, &Transform),
+        (
+            With<Ball>,
+            With<ShouldRender>,
+            Or<(Added<Ball>, Added<Transform>, Added<ShouldRender>)>,
+        ),
+    >,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for (entity, transform) in added_ball_query.iter() {
+        debug!("Attaching Ball graphics for entity ({:?})", entity);
         commands.entity(entity).insert(MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(Ball::RADIUS).into()).into(),
             material: materials.add(Color::MIDNIGHT_BLUE.into()),
@@ -36,9 +47,16 @@ fn setup_ball_shape(
 
 fn setup_field_shape(
     mut commands: Commands,
-    added_fielder_ring_query: Query<(Entity, &FielderTrack), Added<FielderTrack>>,
+    added_fielder_ring_query: Query<
+        (Entity, &FielderTrack),
+        (
+            With<ShouldRender>,
+            Or<(Added<FielderTrack>, Added<ShouldRender>)>,
+        ),
+    >,
 ) {
     for (entity, track) in added_fielder_ring_query.iter() {
+        debug!("Attaching FieldTrack graphics for entity ({:?})", entity);
         let shape = shapes::Circle {
             radius: track.ring.radius(),
             ..Default::default()
@@ -55,11 +73,18 @@ fn setup_field_shape(
 
 fn setup_fielder_shape(
     mut commands: Commands,
-    added_fielder_query: Query<(Entity, &Transform, &Fielder), Added<Fielder>>,
+    added_fielder_query: Query<
+        (Entity, &Transform, &Fielder),
+        (
+            With<ShouldRender>,
+            Or<(Added<Fielder>, Added<Transform>, Added<ShouldRender>)>,
+        ),
+    >,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for (entity, transform, fielder) in added_fielder_query.iter() {
+        debug!("Attaching Fielder graphics for entity ({:?})", entity);
         commands.entity(entity).insert(MaterialMesh2dBundle {
             mesh: meshes
                 .add(
@@ -75,9 +100,17 @@ fn setup_fielder_shape(
 
 fn setup_boundary_shape(
     mut commands: Commands,
-    added_boundary_query: Query<Entity, Added<Boundary>>,
+    added_boundary_query: Query<
+        Entity,
+        (
+            With<Boundary>,
+            With<ShouldRender>,
+            Or<(Added<Boundary>, Added<ShouldRender>)>,
+        ),
+    >,
 ) {
     for entity in added_boundary_query.iter() {
+        debug!("Attaching Boundary graphics for entity ({:?})", entity);
         let shape = shapes::Circle {
             radius: Boundary::RADIUS,
             ..Default::default()
@@ -94,11 +127,19 @@ fn setup_boundary_shape(
 
 fn setup_batter_shape(
     mut commands: Commands,
-    added_batter_query: Query<(Entity, &Transform), Added<Batter>>,
+    added_batter_query: Query<
+        (Entity, &Transform),
+        (
+            With<Batter>,
+            With<ShouldRender>,
+            Or<(Added<Batter>, Added<Transform>, Added<ShouldRender>)>,
+        ),
+    >,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for (entity, transform) in added_batter_query.iter() {
+        debug!("Attaching Batter graphics for entity ({:?})", entity);
         let shape = shapes::Circle {
             radius: Batter::RADIUS,
             ..Default::default()
@@ -131,8 +172,19 @@ fn setup_batter_shape(
     }
 }
 
-fn setup_wicket_shape(mut commands: Commands, added_wicket_query: Query<Entity, Added<Wicket>>) {
+fn setup_wicket_shape(
+    mut commands: Commands,
+    added_wicket_query: Query<
+        Entity,
+        (
+            With<Wicket>,
+            With<ShouldRender>,
+            Or<(Added<Wicket>, Added<ShouldRender>)>,
+        ),
+    >,
+) {
     for entity in added_wicket_query.iter() {
+        debug!("Attaching Wicket graphics for entity ({:?})", entity);
         let shape = shapes::Circle {
             radius: Wicket::RADIUS,
             ..Default::default()

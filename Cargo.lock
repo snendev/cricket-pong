@@ -1709,6 +1709,7 @@ dependencies = [
 name = "common_lobby_protocol"
 version = "0.1.0"
 dependencies = [
+ "bevy_core",
  "bevy_ecs",
  "bevy_hierarchy",
  "bevy_log",
@@ -1924,6 +1925,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
+ "bevy_geppetto 0.1.0 (git+https://github.com/snendev/bevy_geppetto.git?rev=b42bb4b)",
  "cricket_pong_controls",
  "cricket_pong_game",
  "cricket_pong_graphics",
@@ -1951,6 +1953,7 @@ dependencies = [
 name = "cricket_pong_base"
 version = "0.1.0"
 dependencies = [
+ "bevy_core",
  "bevy_ecs",
  "bevy_math",
  "bevy_rapier2d",
@@ -2006,11 +2009,16 @@ dependencies = [
  "bevy_app",
  "bevy_core",
  "bevy_ecs",
+ "bevy_geppetto 0.1.0 (git+https://github.com/snendev/bevy_geppetto.git?rev=b42bb4b)",
  "bevy_log",
+ "bevy_time",
  "bevy_utils",
  "common_lobby_server",
  "cricket_pong_game",
+ "cricket_pong_graphics",
+ "itertools",
  "naia-bevy-server",
+ "naia-shared",
 ]
 
 [[package]]

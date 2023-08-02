@@ -9,6 +9,7 @@ publish = false
 [dependencies]
 common_lobby_protocol = { path = "../lobby/protocol" }
 bevy_ecs = { version = "0.11" }
+bevy_core = { version = "0.11" }
 bevy_math = { version = "0.11" }
 bevy_transform = { version = "0.11" }
 bevy_rapier2d = { version = "0.22" }

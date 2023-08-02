@@ -1,4 +1,5 @@
-use bevy_ecs::prelude::Component;
+use bevy_core::Name;
+use bevy_ecs::prelude::{Bundle, Component};
 
 use naia_bevy_shared::{Property, Replicate, Serde};
 
@@ -35,6 +36,10 @@ impl Scoreboard {
             })
             .sum()
     }
+
+    pub fn name() -> Name {
+        Name::new("Scoreboard")
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -62,5 +67,20 @@ impl Scoreboard {
 
     pub fn clear(&mut self) {
         self.scores.clear();
+    }
+}
+
+#[derive(Bundle)]
+pub struct ScoreboardBundle {
+    name: Name,
+    scoreboard: Scoreboard,
+}
+
+impl Default for ScoreboardBundle {
+    fn default() -> Self {
+        Self {
+            name: Scoreboard::name(),
+            scoreboard: Scoreboard::default(),
+        }
     }
 }

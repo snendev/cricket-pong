@@ -1,4 +1,4 @@
-use bevy::prelude::{info, EventReader, Query, ResMut};
+use bevy::prelude::{debug, info, EventReader, Query, ResMut};
 
 use naia_bevy_client::{events::ClientTickEvent, Client};
 
@@ -19,9 +19,7 @@ pub fn send_and_prepare_inputs(
     let mut ticks = Vec::new();
 
     for ClientTickEvent(client_tick) in tick_reader.iter() {
-        info!("Client tick {}", client_tick);
         let mut predicted_actions = Actions::default();
-
         for (entity, action) in player_actions.0.drain(..) {
             // Send each command to server
             let mut input_message = ActionMessage::new(Some(action.clone()));
@@ -32,6 +30,8 @@ pub fn send_and_prepare_inputs(
             );
             if let Ok(SourceOf(prediction)) = sources_query.get(entity) {
                 predicted_actions.0.push((*prediction, action));
+            } else {
+                debug!("Warning: Input received for non-source entity")
             }
         }
 
