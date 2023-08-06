@@ -1,10 +1,9 @@
 use bevy_core::Name;
 use bevy_ecs::prelude::{Bundle, Component};
-use bevy_transform::prelude::Transform as BevyTransform;
 
 use naia_bevy_shared::Replicate;
 
-use crate::components::physics::{ExternalImpulse, Transform, Velocity};
+use crate::components::physics::{ExternalImpulse, Rotation, Translation, Velocity};
 
 #[derive(Component, Default, Replicate)]
 pub struct Ball;
@@ -21,7 +20,8 @@ impl Ball {
 pub struct BallBundle {
     name: Name,
     ball: Ball,
-    transform: Transform,
+    translation: Translation,
+    rotation: Rotation,
     impulse: ExternalImpulse,
     velocity: Velocity,
 }
@@ -31,7 +31,8 @@ impl Default for BallBundle {
         BallBundle {
             name: Ball::name(),
             ball: Ball,
-            transform: Transform::from(&BevyTransform::from_xyz(0., 0., 2.)),
+            translation: Translation::new(0., 0., 2.),
+            rotation: Rotation::default(),
             velocity: Velocity::default(),
             impulse: ExternalImpulse::default(),
         }

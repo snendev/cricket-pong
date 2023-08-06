@@ -3,14 +3,11 @@ use std::marker::PhantomData;
 use bevy_app::prelude::{App, Plugin, Update};
 use bevy_ecs::prelude::{Component, Entity, IntoSystem, IntoSystemConfigs, SystemSet, With};
 use bevy_math::prelude::Vec2;
-use bevy_transform::prelude::Transform;
 
 pub use cricket_pong_base::{
     self as base,
     actions::Actions,
-    components::physics::{
-        ExternalImpulse as SyncImpulse, Transform as SyncTransform, Velocity as SyncVelocity,
-    },
+    components::physics::{ExternalImpulse as SyncImpulse, Velocity as SyncVelocity},
     lobby::{self, components::GameInstance},
     rapier::prelude::{
         ExternalImpulse, RapierConfiguration, RapierPhysicsPlugin, TimestepMode, Velocity,
@@ -124,7 +121,7 @@ where
             (
                 // before ticks, sync network state to physics
                 (
-                    systems::sync::sync_component::<SyncTransform, Transform, With<ShouldTick>>,
+                    systems::sync::sync_transforms_from_replicated::<With<ShouldTick>>,
                     systems::sync::sync_component::<SyncVelocity, Velocity, With<ShouldTick>>,
                     systems::sync::sync_component::<SyncImpulse, ExternalImpulse, With<ShouldTick>>,
                 ),
@@ -133,7 +130,7 @@ where
                     .pipe(schedule::run_core_game_loop),
                 // after running all physics ticks, sync physics state back to network components
                 (
-                    systems::sync::sync_replicated::<Transform, SyncTransform, With<ShouldTick>>,
+                    systems::sync::sync_transforms_to_replicated::<With<ShouldTick>>,
                     systems::sync::sync_replicated::<Velocity, SyncVelocity, With<ShouldTick>>,
                     systems::sync::sync_replicated::<ExternalImpulse, SyncImpulse, With<ShouldTick>>,
                 ),

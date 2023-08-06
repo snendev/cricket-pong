@@ -38,14 +38,20 @@ pub struct Vec3 {
     pub z: f32,
 }
 
-impl From<&Vec3> for math::Vec3 {
-    fn from(value: &Vec3) -> Self {
+impl Vec3 {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Vec3 { x, y, z }
+    }
+}
+
+impl From<Vec3> for math::Vec3 {
+    fn from(value: Vec3) -> Self {
         math::Vec3::new(value.x, value.y, value.z)
     }
 }
 
-impl From<&math::Vec3> for Vec3 {
-    fn from(value: &math::Vec3) -> Self {
+impl From<math::Vec3> for Vec3 {
+    fn from(value: math::Vec3) -> Self {
         Vec3 {
             x: value.x,
             y: value.y,
@@ -59,62 +65,21 @@ pub struct Quat {
     inner: [f32; 4],
 }
 
-impl From<&Quat> for math::Quat {
-    fn from(value: &Quat) -> Self {
+impl From<Quat> for math::Quat {
+    fn from(value: Quat) -> Self {
         math::Quat::from_array(value.inner)
     }
 }
 
-impl From<&math::Quat> for Quat {
-    fn from(value: &math::Quat) -> Self {
+impl From<math::Quat> for Quat {
+    fn from(value: math::Quat) -> Self {
         Quat {
             inner: value.to_array(),
         }
     }
 }
 
-#[derive(Component, Replicate)]
-pub struct Transform {
-    pub translation: Property<Vec3>,
-    pub rotation: Property<Quat>,
-    pub scale: Property<Vec3>,
-}
-
-impl From<&Transform> for BevyTransform {
-    fn from(value: &Transform) -> Self {
-        BevyTransform {
-            translation: (&*value.translation).into(),
-            rotation: (&*value.rotation).into(),
-            scale: (&*value.scale).into(),
-        }
-    }
-}
-
-impl From<&BevyTransform> for Transform {
-    fn from(value: &BevyTransform) -> Self {
-        Transform::new_complete(
-            (&value.translation).into(),
-            (&value.rotation).into(),
-            (&value.scale).into(),
-        )
-    }
-}
-
-impl Default for Transform {
-    fn default() -> Self {
-        Transform::from(&BevyTransform::from_xyz(0., 0., 1.))
-    }
-}
-
-impl std::fmt::Debug for Transform {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("SyncTransform")
-            .field("translation", &*self.translation)
-            .field("rotation", &*self.rotation)
-            .field("scale", &*self.scale)
-            .finish()
-    }
-}
+// velocity
 
 #[derive(Component, Replicate)]
 pub struct Velocity {
@@ -152,6 +117,8 @@ impl std::fmt::Debug for Velocity {
     }
 }
 
+// impulse
+
 #[derive(Component, Replicate)]
 pub struct ExternalImpulse {
     pub linear: Property<Vec2>,
@@ -184,5 +151,103 @@ impl std::fmt::Debug for ExternalImpulse {
             .field("linear", &*self.linear)
             .field("angular", &*self.angular)
             .finish()
+    }
+}
+
+// transform
+
+#[derive(Component, Replicate)]
+pub struct Translation {
+    inner: Property<Vec3>,
+}
+
+impl Translation {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Translation::new_complete(Vec3::new(x, y, z))
+    }
+}
+
+impl From<Vec3> for Translation {
+    fn from(value: Vec3) -> Self {
+        Translation::new_complete(value)
+    }
+}
+
+impl From<&Translation> for Vec3 {
+    fn from(value: &Translation) -> Self {
+        *value.inner
+    }
+}
+
+impl From<&BevyTransform> for Translation {
+    fn from(transform: &BevyTransform) -> Self {
+        Translation::new_complete(transform.translation.into())
+    }
+}
+
+impl Default for Translation {
+    fn default() -> Self {
+        Translation::new_complete(Vec3::new(0., 0., 1.))
+    }
+}
+
+impl std::fmt::Debug for Translation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("SyncTranslation")
+            .field(&*self.inner)
+            .finish()
+    }
+}
+
+#[derive(Component, Replicate)]
+pub struct Rotation {
+    inner: Property<Quat>,
+}
+
+impl From<Quat> for Rotation {
+    fn from(value: Quat) -> Self {
+        Rotation::new_complete(value)
+    }
+}
+
+impl From<&Rotation> for Quat {
+    fn from(value: &Rotation) -> Self {
+        *value.inner
+    }
+}
+
+impl From<&BevyTransform> for Rotation {
+    fn from(transform: &BevyTransform) -> Self {
+        Rotation::new_complete(transform.rotation.into())
+    }
+}
+
+impl std::fmt::Debug for Rotation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("SyncRotation").field(&*self.inner).finish()
+    }
+}
+
+impl Default for Rotation {
+    fn default() -> Self {
+        Quat::from(bevy_math::Quat::default()).into()
+    }
+}
+
+pub struct Transform<'a>(&'a Translation, &'a Rotation);
+
+impl<'a> Transform<'a> {
+    pub fn new(translation: &'a Translation, rotation: &'a Rotation) -> Self {
+        Transform(translation, rotation)
+    }
+}
+
+impl<'a> From<Transform<'a>> for BevyTransform {
+    fn from(value: Transform<'a>) -> Self {
+        BevyTransform {
+            translation: (*value.0.inner).into(),
+            rotation: (*value.1.inner).into(),
+            ..Default::default()
+        }
     }
 }

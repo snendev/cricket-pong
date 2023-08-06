@@ -3,7 +3,11 @@ use bevy_ecs::prelude::{Bundle, Component};
 
 use naia_bevy_shared::Replicate;
 
-use crate::components::{ball::Ball, batter::Batter, physics::Transform};
+use crate::components::{
+    ball::Ball,
+    batter::Batter,
+    physics::{Rotation, Translation},
+};
 
 #[derive(Component, Default, Replicate)]
 pub struct Wicket;
@@ -20,7 +24,8 @@ impl Wicket {
 pub struct WicketBundle {
     name: Name,
     wicket: Wicket,
-    transform: Transform,
+    translation: Translation,
+    rotation: Rotation,
 }
 
 impl Default for WicketBundle {
@@ -28,7 +33,8 @@ impl Default for WicketBundle {
         WicketBundle {
             name: Wicket::name(),
             wicket: Wicket,
-            transform: Transform::default(),
+            translation: Translation::default(),
+            rotation: Rotation::default(),
         }
     }
 }

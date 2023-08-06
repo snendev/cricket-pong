@@ -30,7 +30,8 @@ impl ProtocolPlugin for CricketPongProtocolPlugin {
             .add_component::<player::PlayerTwo>()
             .add_component::<player::Position>()
             .add_component::<scoreboard::Scoreboard>()
-            .add_component::<physics::Transform>()
+            .add_component::<physics::Translation>()
+            .add_component::<physics::Rotation>()
             .add_component::<physics::Velocity>()
             .add_component::<physics::ExternalImpulse>();
     }

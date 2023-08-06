@@ -6,7 +6,7 @@ use cricket_pong_game::base::{
     actions::Actions,
     components::{
         batter::Batter,
-        physics::{ExternalImpulse, Transform, Velocity},
+        physics::{ExternalImpulse, Rotation, Translation, Velocity},
     },
     rapier::prelude::RapierConfiguration,
 };
@@ -20,7 +20,9 @@ fn get_latest_tick(mut event_reader: EventReader<UpdateComponentEvents>) -> Opti
     let mut latest_tick: Option<Tick> = None;
     for events in event_reader.iter() {
         for (server_tick, _entity) in events
-            .read::<Transform>()
+            .read::<Translation>()
+            .into_iter()
+            .chain(events.read::<Rotation>())
             .into_iter()
             .chain(events.read::<Velocity>())
             .into_iter()

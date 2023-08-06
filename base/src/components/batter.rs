@@ -1,10 +1,9 @@
 use bevy_core::Name;
 use bevy_ecs::prelude::{Bundle, Component};
-use bevy_transform::prelude::Transform as BevyTransform;
 
 use naia_bevy_shared::{Property, Replicate};
 
-use crate::components::physics::{Transform, Velocity};
+use crate::components::physics::{Rotation, Translation, Velocity};
 
 #[derive(Component, Replicate)]
 pub struct Batter {
@@ -35,7 +34,8 @@ impl Batter {
 pub struct BatterBundle {
     name: Name,
     batter: Batter,
-    transform: Transform,
+    translation: Translation,
+    rotation: Rotation,
     velocity: Velocity,
 }
 
@@ -44,11 +44,8 @@ impl Default for BatterBundle {
         BatterBundle {
             name: Batter::name(),
             batter: Batter::default(),
-            transform: Transform::from(&BevyTransform::from_xyz(
-                Batter::RADIUS + Batter::HWIDTH,
-                0.,
-                1.,
-            )),
+            translation: Translation::new(Batter::RADIUS + Batter::HWIDTH, 0., 1.),
+            rotation: Rotation::default(),
             velocity: Velocity::default(),
         }
     }

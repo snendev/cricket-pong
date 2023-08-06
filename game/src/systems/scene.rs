@@ -9,7 +9,7 @@ use cricket_pong_base::{
         boundary::{Boundary, BoundaryBundle},
         fielder::{Fielder, FielderBundle, FielderPosition, FielderRing, FielderTrackBundle},
         phase::GamePhase,
-        physics::{ExternalImpulse, Transform, Velocity},
+        physics::{ExternalImpulse, Rotation, Transform, Translation, Velocity},
         player::{PlayerOne, PlayerTwo, Position},
         scoreboard::ScoreboardBundle,
         wicket::{Wicket, WicketBundle},
@@ -140,14 +140,14 @@ pub(crate) fn spawn_scene(
 pub(crate) fn attach_ball_physics_components(
     mut commands: Commands,
     added_ball_query: Query<
-        (Entity, &Transform, &Velocity, &ExternalImpulse),
+        (Entity, &Translation, &Rotation, &Velocity, &ExternalImpulse),
         (Added<Ball>, With<ShouldTick>),
     >,
 ) {
-    for (entity, transform, velocity, impulse) in added_ball_query.iter() {
+    for (entity, translation, rotation, velocity, impulse) in added_ball_query.iter() {
         debug!("Ball physics components added to entity ({:?})", entity);
         commands.entity(entity).insert(BallPhysicsBundle::new(
-            transform.into(),
+            Transform::new(translation, rotation).into(),
             velocity.into(),
             impulse.into(),
         ));
@@ -157,15 +157,15 @@ pub(crate) fn attach_ball_physics_components(
 pub(crate) fn attach_fielder_physics_components(
     mut commands: Commands,
     added_fielder_query: Query<
-        (Entity, &Fielder, &Transform, &Velocity),
+        (Entity, &Fielder, &Translation, &Rotation, &Velocity),
         (Added<Fielder>, With<ShouldTick>),
     >,
 ) {
-    for (entity, fielder, transform, velocity) in added_fielder_query.iter() {
+    for (entity, fielder, translation, rotation, velocity) in added_fielder_query.iter() {
         debug!("Fielder physics components added to entity ({:?})", entity);
         commands.entity(entity).insert(FielderPhysicsBundle::new(
             fielder,
-            transform.into(),
+            Transform::new(translation, rotation).into(),
             velocity.into(),
         ));
     }
@@ -173,37 +173,44 @@ pub(crate) fn attach_fielder_physics_components(
 
 pub(crate) fn attach_batter_physics_components(
     mut commands: Commands,
-    added_batter_query: Query<(Entity, &Transform, &Velocity), (Added<Batter>, With<ShouldTick>)>,
+    added_batter_query: Query<
+        (Entity, &Translation, &Rotation, &Velocity),
+        (Added<Batter>, With<ShouldTick>),
+    >,
 ) {
-    for (entity, transform, velocity) in added_batter_query.iter() {
+    for (entity, translation, rotation, velocity) in added_batter_query.iter() {
         debug!("Batter physics components added to entity ({:?})", entity);
-        commands
-            .entity(entity)
-            .insert(BatterPhysicsBundle::new(transform.into(), velocity.into()));
+        commands.entity(entity).insert(BatterPhysicsBundle::new(
+            Transform::new(translation, rotation).into(),
+            velocity.into(),
+        ));
     }
 }
 
 pub(crate) fn attach_boundary_physics_components(
     mut commands: Commands,
-    added_boundary_query: Query<(Entity, &Transform), (Added<Boundary>, With<ShouldTick>)>,
+    added_boundary_query: Query<
+        (Entity, &Translation, &Rotation),
+        (Added<Boundary>, With<ShouldTick>),
+    >,
 ) {
-    for (entity, transform) in added_boundary_query.iter() {
+    for (entity, translation, rotation) in added_boundary_query.iter() {
         debug!("Boundary physics components added to entity ({:?})", entity);
-        commands
-            .entity(entity)
-            .insert(BoundaryPhysicsBundle::new(transform.into()));
+        commands.entity(entity).insert(BoundaryPhysicsBundle::new(
+            Transform::new(translation, rotation).into(),
+        ));
     }
 }
 
 pub(crate) fn attach_wicket_physics_components(
     mut commands: Commands,
-    added_wicket_query: Query<(Entity, &Transform), (Added<Wicket>, With<ShouldTick>)>,
+    added_wicket_query: Query<(Entity, &Translation, &Rotation), (Added<Wicket>, With<ShouldTick>)>,
 ) {
-    for (entity, transform) in added_wicket_query.iter() {
+    for (entity, translation, rotation) in added_wicket_query.iter() {
         debug!("Wicket physics components added to entity ({:?})", entity);
-        commands
-            .entity(entity)
-            .insert(WicketPhysicsBundle::new(transform.into()));
+        commands.entity(entity).insert(WicketPhysicsBundle::new(
+            Transform::new(translation, rotation).into(),
+        ));
     }
 }
 

@@ -10,8 +10,8 @@ use cricket_pong_game::{
         components::{
             batter::Batter,
             physics::{
-                ExternalImpulse as SyncImpulse, Transform as SyncTransform,
-                Velocity as SyncVelocity,
+                ExternalImpulse as SyncImpulse, Rotation as SyncRotation,
+                Translation as SyncTranslation, Velocity as SyncVelocity,
             },
         },
         protocol::protocol,
@@ -119,7 +119,8 @@ where
         .add_systems(
             Update,
             (
-                rollback_component::<SyncTransform>,
+                rollback_component::<SyncTranslation>,
+                rollback_component::<SyncRotation>,
                 rollback_component::<SyncVelocity>,
                 rollback_component::<SyncImpulse>,
                 rollback_component::<Batter>,

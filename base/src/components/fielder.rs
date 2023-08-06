@@ -1,13 +1,14 @@
 use bevy_core::Name;
 use bevy_ecs::prelude::{Bundle, Component};
 use bevy_math::{Quat, Vec3};
-use bevy_transform::prelude::Transform as BevyTransform;
 
 use bevy_rapier2d::prelude::Velocity as RapierVelocity;
 
 use naia_bevy_shared::{Property, Replicate, Serde};
 
-use crate::components::physics::{Transform, Velocity};
+use crate::components::physics::{
+    Quat as SyncQuat, Rotation, Translation, Vec3 as SyncVec3, Velocity,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Serde)]
 pub enum FielderRing {
@@ -132,7 +133,8 @@ impl Fielder {
 pub struct FielderBundle {
     name: Name,
     fielder: Fielder,
-    transform: Transform,
+    translation: Translation,
+    rotation: Rotation,
     velocity: Velocity,
 }
 
@@ -143,9 +145,8 @@ impl FielderBundle {
         FielderBundle {
             name: Fielder::name(),
             fielder: Fielder::new(position, ring),
-            transform: Transform::from(
-                &BevyTransform::from_translation(translation).with_rotation(rotation),
-            ),
+            translation: SyncVec3::from(translation).into(),
+            rotation: SyncQuat::from(rotation).into(),
             velocity: Velocity::from(&RapierVelocity::zero()),
         }
     }
