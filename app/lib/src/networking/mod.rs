@@ -16,11 +16,10 @@ use cricket_pong_game::{
         },
         protocol::protocol,
     },
-    lobby::components::GameInstance,
     GameplayPlugin,
 };
 
-use crate::AppScreen;
+use crate::{noop, AppScreen};
 
 pub mod components;
 pub(crate) mod resources;
@@ -120,5 +119,3 @@ impl Plugin for OnlineGameplayPlugin {
             );
     }
 }
-
-fn noop(_: In<Vec<(GameInstance, Vec<Entity>)>>) {}

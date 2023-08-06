@@ -1,10 +1,13 @@
 use bevy::prelude::{
-    in_state, App, Commands, DefaultPlugins, IntoSystemSetConfig, OnEnter, PluginGroup, States,
-    SystemSet, Update, Window, WindowPlugin,
+    in_state, App, Commands, DefaultPlugins, Entity, In, IntoSystemSetConfig, Local, OnEnter,
+    PluginGroup, Res, States, SystemSet, Update, Window, WindowPlugin,
 };
 
 use cricket_pong_controls::{Controller, PlayerControllerPlugin};
-use cricket_pong_game::base::components::player::{PlayerOne, PlayerTwo};
+use cricket_pong_game::{
+    base::components::player::{PlayerOne, PlayerTwo},
+    Actions, GameInstance, GameplayPlugin,
+};
 use cricket_pong_graphics::GraphicsPlugin;
 
 mod home;
@@ -31,6 +34,12 @@ fn spawn_local_players(mut commands: Commands) {
     commands.spawn((PlayerTwo, PlayerTwo::name(), Controller::Two));
 }
 
+fn yield_local_ticks(actions: Res<Actions>, mut tick: Local<u16>) -> Vec<(u16, Actions)> {
+    let result = (*tick, actions.clone());
+    *tick += 1;
+    vec![result]
+}
+
 pub fn run_app(canvas: Option<String>) {
     App::default()
         .add_state::<AppScreen>()
@@ -46,7 +55,11 @@ pub fn run_app(canvas: Option<String>) {
             Update,
             LocalGameplaySet.run_if(in_state(AppScreen::LocalGame)),
         )
-        // .add_plugins(GameplayPlugin::new(LocalGameplaySet, yield_local_ticks))
+        .add_plugins(GameplayPlugin::new(
+            LocalGameplaySet,
+            yield_local_ticks,
+            noop,
+        ))
         .add_plugins(networking::OnlineGameplayPlugin)
         .add_plugins((
             PlayerControllerPlugin,
@@ -55,3 +68,5 @@ pub fn run_app(canvas: Option<String>) {
         .add_systems(OnEnter(AppScreen::LocalGame), spawn_local_players)
         .run();
 }
+
+pub(crate) fn noop(_: In<Vec<(GameInstance, Vec<Entity>)>>) {}
