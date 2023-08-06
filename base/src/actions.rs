@@ -44,5 +44,5 @@ pub enum Action {
     Batter(BatterAction),
 }
 
-#[derive(Clone, Default, Resource)]
+#[derive(Clone, Debug, Default, Resource)]
 pub struct Actions(pub Vec<(Entity, Action)>);

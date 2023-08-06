@@ -114,8 +114,6 @@ pub(crate) fn spawn_scene(
                 .id(),
         );
 
-        entities.push((instance.clone(), lobby_entities));
-
         // insert player positions
         for (entity, player_instance) in player_one_query.iter() {
             if player_instance == instance {
@@ -129,6 +127,8 @@ pub(crate) fn spawn_scene(
                 commands.entity(entity).insert(Position::fielder());
             }
         }
+
+        entities.push((instance.clone(), lobby_entities));
 
         lobby.activate();
         commands.entity(lobby_entity).insert(GamePhase::default());

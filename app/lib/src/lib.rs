@@ -1,14 +1,10 @@
 use bevy::prelude::{
-    App, Commands, DefaultPlugins, Entity, In, OnEnter, PluginGroup, States, SystemSet, Window,
-    WindowPlugin,
+    in_state, App, Commands, DefaultPlugins, IntoSystemSetConfig, OnEnter, PluginGroup, States,
+    SystemSet, Update, Window, WindowPlugin,
 };
 
 use cricket_pong_controls::{Controller, PlayerControllerPlugin};
-use cricket_pong_game::{
-    base::components::player::{PlayerOne, PlayerTwo},
-    lobby::components::GameInstance,
-    GameplayPlugin,
-};
+use cricket_pong_game::base::components::player::{PlayerOne, PlayerTwo};
 use cricket_pong_graphics::GraphicsPlugin;
 
 mod home;
@@ -18,11 +14,6 @@ pub mod networking;
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
 pub struct LocalGameplaySet;
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
-pub enum OnlineGameplaySet {
-    Tick,
-    Spawn,
-}
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, States)]
 pub enum AppScreen {
@@ -40,8 +31,6 @@ fn spawn_local_players(mut commands: Commands) {
     commands.spawn((PlayerTwo, PlayerTwo::name(), Controller::Two));
 }
 
-fn noop(_: In<Vec<(GameInstance, Vec<Entity>)>>) {}
-
 pub fn run_app(canvas: Option<String>) {
     App::default()
         .add_state::<AppScreen>()
@@ -53,17 +42,12 @@ pub fn run_app(canvas: Option<String>) {
             ..Default::default()
         }))
         .add_plugins(HomeScreenPlugin)
+        .configure_set(
+            Update,
+            LocalGameplaySet.run_if(in_state(AppScreen::LocalGame)),
+        )
         // .add_plugins(GameplayPlugin::new(LocalGameplaySet, yield_local_ticks))
-        .add_plugins(networking::NetworkPlugin)
-        .add_plugins(GameplayPlugin::new(
-            OnlineGameplaySet::Tick,
-            networking::send_and_prepare_inputs,
-            noop,
-        ))
-        // .add_plugins(GameplayPlugin::new(
-        //     OnlineGameplaySet,
-        //     networking::receive_update_component_events,
-        // ))
+        .add_plugins(networking::OnlineGameplayPlugin)
         .add_plugins((
             PlayerControllerPlugin,
             GraphicsPlugin::new(AppScreen::MainMenu),

@@ -40,18 +40,11 @@ pub(crate) fn handle_room_cleanup(
 pub(crate) fn handle_user_disconnection(
     mut reader: EventReader<DisconnectEvent>,
     mut user_entities: ResMut<UserEntities>,
-    mut server: Server,
     mut commands: Commands,
     mut queued_players: ResMut<QueuedUsers>,
 ) {
     for DisconnectEvent(user_key, _) in reader.iter() {
         let Some(entity) = user_entities.remove(user_key) else { continue; };
-        let user_ref = server.user(user_key);
-        let room_keys = user_ref.room_keys().cloned().collect::<Vec<_>>();
-        for room_key in room_keys {
-            // TODO: NAIA probably does this automatically on despawn
-            server.room_mut(&room_key).remove_entity(&entity);
-        }
         if let Some((index, _)) = queued_players
             .users
             .iter()

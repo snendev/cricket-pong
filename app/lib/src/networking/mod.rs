@@ -1,27 +1,38 @@
 use bevy::prelude::{
-    in_state, App, Component, IntoSystemConfigs, NextState, OnEnter, OnExit, Plugin, ResMut,
-    States, Update,
+    in_state, App, Component, Entity, In, IntoSystemConfigs, IntoSystemSetConfig,
+    IntoSystemSetConfigs, NextState, OnEnter, OnExit, Plugin, ResMut, States, SystemSet, Update,
 };
 
-use naia_bevy_client::{ClientConfig, Plugin as ClientPlugin};
+use naia_bevy_client::{ClientConfig, Plugin as ClientPlugin, ReceiveEvents};
 
-use cricket_pong_game::base::protocol::protocol;
+use cricket_pong_game::{
+    base::{
+        components::{
+            batter::Batter,
+            physics::{
+                ExternalImpulse as SyncImpulse, Transform as SyncTransform,
+                Velocity as SyncVelocity,
+            },
+        },
+        protocol::protocol,
+    },
+    lobby::components::GameInstance,
+    GameplayPlugin,
+};
 
 use crate::AppScreen;
 
 pub mod components;
 pub(crate) mod resources;
+use resources::TickHistory;
+
+use self::rollback::rollback_component;
 
 mod connection;
 mod events;
 
 mod rollback;
-pub(crate) use rollback::receive_update_component_events;
-
 mod tick;
-pub use tick::send_and_prepare_inputs;
-
-use self::resources::TickHistory;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, States)]
 pub(crate) enum ConnectionState {
@@ -44,9 +55,15 @@ fn exit_online_game_state(mut state: ResMut<NextState<ConnectionState>>) {
     state.set(ConnectionState::Disconnected);
 }
 
-pub struct NetworkPlugin;
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
+pub enum OnlineGameplaySet {
+    Tick,
+    Rollback,
+}
 
-impl Plugin for NetworkPlugin {
+pub struct OnlineGameplayPlugin;
+
+impl Plugin for OnlineGameplayPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TickHistory>()
             .add_plugins(ClientPlugin::new(ClientConfig::default(), protocol()))
@@ -67,7 +84,41 @@ impl Plugin for NetworkPlugin {
                     events::handle_insert_position,
                     events::spawn_predictions,
                 )
-                    .run_if(in_state(AppScreen::OnlineGame)),
+                    .run_if(in_state(AppScreen::OnlineGame))
+                    .in_set(ReceiveEvents),
+            )
+            .configure_sets(
+                Update,
+                (
+                    OnlineGameplaySet::Tick.run_if(in_state(AppScreen::OnlineGame)),
+                    OnlineGameplaySet::Rollback
+                        .after(OnlineGameplaySet::Tick)
+                        .run_if(in_state(AppScreen::OnlineGame)),
+                )
+                    .after(ReceiveEvents),
+            )
+            .add_plugins(GameplayPlugin::new(
+                OnlineGameplaySet::Tick,
+                tick::send_and_prepare_inputs,
+                noop,
+            ))
+            .add_plugins(GameplayPlugin::new(
+                OnlineGameplaySet::Rollback,
+                rollback::replay_ticks,
+                noop,
+            ))
+            .add_systems(
+                Update,
+                (
+                    rollback_component::<SyncTransform>,
+                    rollback_component::<SyncVelocity>,
+                    rollback_component::<SyncImpulse>,
+                    rollback_component::<Batter>,
+                )
+                    .before(OnlineGameplaySet::Rollback)
+                    .after(OnlineGameplaySet::Tick),
             );
     }
 }
+
+fn noop(_: In<Vec<(GameInstance, Vec<Entity>)>>) {}

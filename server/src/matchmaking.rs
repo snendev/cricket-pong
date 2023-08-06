@@ -1,7 +1,7 @@
 use itertools::Itertools;
 
 use bevy_ecs::prelude::{Commands, ResMut};
-use bevy_log::{debug, info};
+use bevy_log::debug;
 
 use naia_bevy_server::{CommandsExt, Server};
 use naia_shared::BigMapKey;

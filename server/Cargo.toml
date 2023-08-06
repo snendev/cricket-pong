@@ -17,6 +17,7 @@ bevy_log = { version = "0.11" }
 bevy_time = { version = "0.11" }
 bevy_utils = { version = "0.11" }
 naia-bevy-server = { git = "https://github.com/anellie/naia", branch = "bevy-0.11", features = ["transport_webrtc"]  }
+naia-server = { git = "https://github.com/anellie/naia", branch = "bevy-0.11"  }
 naia-shared = { git = "https://github.com/anellie/naia", branch = "bevy-0.11"  }
 itertools = { version = "0.11" }
 

@@ -1,4 +1,4 @@
-use bevy::prelude::{debug, Commands, Entity, EventReader, Name, Query};
+use bevy::prelude::{debug, info, Commands, Entity, EventReader, Name, Query};
 
 use cricket_pong_controls::Controller;
 use cricket_pong_graphics::ShouldRender;
@@ -47,8 +47,7 @@ pub fn receive_entity_assignment_message(
 }
 
 // TODO:
-// BALL NOT SPAWNING ON CLIENTS
-// POSITION INCONSISTENTLY ATTACHED SERVER SIDE
+// WEIRD ISSUES ON GAME STARTUP
 
 pub fn handle_insert_position(
     mut commands: Commands,
@@ -57,6 +56,7 @@ pub fn handle_insert_position(
 ) {
     for event in event_reader.iter() {
         for entity in event.read::<Position>() {
+            info!("Inserted position for entity: ({:?})", entity);
             match query.get(entity) {
                 Ok((position, source)) => {
                     commands.entity(source.0).insert(position.clone());

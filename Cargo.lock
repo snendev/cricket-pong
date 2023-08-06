@@ -990,6 +990,8 @@ dependencies = [
  "bevy_ecs",
  "bevy_utils",
  "console_error_panic_hook",
+ "tracing-chrome",
+ "tracing-error",
  "tracing-log",
  "tracing-subscriber",
  "tracing-wasm",
@@ -1153,6 +1155,7 @@ dependencies = [
  "naga",
  "naga_oil",
  "parking_lot 0.12.1",
+ "profiling",
  "regex",
  "ruzstd",
  "serde",
@@ -1926,6 +1929,7 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "bevy_geppetto 0.1.0 (git+https://github.com/snendev/bevy_geppetto.git?rev=b42bb4b)",
+ "bevy_rapier2d",
  "cricket_pong_controls",
  "cricket_pong_game",
  "cricket_pong_graphics",
@@ -1991,6 +1995,7 @@ dependencies = [
  "cricket_pong_base",
  "cricket_pong_controls",
  "cricket_pong_graphics",
+ "naia-bevy-shared",
 ]
 
 [[package]]
@@ -2018,6 +2023,7 @@ dependencies = [
  "cricket_pong_graphics",
  "itertools",
  "naia-bevy-server",
+ "naia-server",
  "naia-shared",
 ]
 
@@ -4601,6 +4607,20 @@ name = "profiling"
 version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "332cd62e95873ea4f41f3dfd6bbbfc5b52aec892d7e8d534197c4720a0bbbab2"
+dependencies = [
+ "profiling-procmacros",
+ "tracing",
+]
+
+[[package]]
+name = "profiling-procmacros"
+version = "1.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "097bf8b99121dfb8c75eed54dfbdbdb1d53e372c53d2353e8a15aad2a479249d"
+dependencies = [
+ "quote",
+ "syn 2.0.23",
+]
 
 [[package]]
 name = "quote"
@@ -5670,6 +5690,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "tracing-chrome"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "496b3cd5447f7ff527bbbf19b071ad542a000adf297d4127078b4dfdb931f41a"
+dependencies = [
+ "serde_json",
+ "tracing-core",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "tracing-core"
 version = "0.1.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5677,6 +5708,16 @@ checksum = "0955b8137a1df6f1a2e9a37d8a6656291ff0297c1a97c24e0d8425fe2312f79a"
 dependencies = [
  "once_cell",
  "valuable",
+]
+
+[[package]]
+name = "tracing-error"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d686ec1c0f384b1277f097b2f279a2ecc11afe8c133c1aabf036a27cb4cd206e"
+dependencies = [
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

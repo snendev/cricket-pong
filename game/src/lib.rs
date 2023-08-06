@@ -1,16 +1,22 @@
 use std::marker::PhantomData;
 
-use base::lobby::components::GameInstance;
-use bevy_app::{
-    prelude::{App, Plugin, Update},
-    PostUpdate,
-};
-use bevy_ecs::prelude::{Component, Entity, IntoSystem, IntoSystemConfigs, SystemSet};
+use bevy_app::prelude::{App, Plugin, Update};
+use bevy_ecs::prelude::{Component, Entity, IntoSystem, IntoSystemConfigs, SystemSet, With};
 use bevy_math::prelude::Vec2;
 
-use bevy_rapier2d::prelude::{RapierConfiguration, RapierPhysicsPlugin};
+use bevy_rapier2d::prelude::{
+    ExternalImpulse, RapierConfiguration, RapierPhysicsPlugin, TimestepMode, Velocity,
+};
 
-pub use cricket_pong_base::{self as base, actions::Actions, lobby};
+use bevy_transform::prelude::Transform;
+pub use cricket_pong_base::{
+    self as base,
+    actions::Actions,
+    components::physics::{
+        ExternalImpulse as SyncImpulse, Transform as SyncTransform, Velocity as SyncVelocity,
+    },
+    lobby::{self, components::GameInstance},
+};
 
 mod objects;
 mod schedule;
@@ -83,7 +89,11 @@ where
                 .init_resource::<Actions>()
                 .insert_resource(RapierConfiguration {
                     gravity: Vec2::ZERO,
-                    // TODO: configure timestep_mode during rollback
+                    // TODO: improve timestep syncing
+                    timestep_mode: TimestepMode::Fixed {
+                        dt: 1. / 60.,
+                        substeps: 1,
+                    },
                     ..Default::default()
                 })
                 .add_plugins(
@@ -91,16 +101,22 @@ where
                         .with_default_system_setup(false),
                 )
                 .add_schedule(schedule_label, schedule)
-                // and add some checks to spawn and unload lobby scenes
+                // and add some systems that spawn and unload lobby scenes
                 .add_systems(
                     Update,
-                    systems::scene::spawn_scene
-                        .pipe(self.on_spawn_system)
+                    (
+                        systems::scene::spawn_scene.pipe(self.on_spawn_system),
+                        (
+                            systems::scene::attach_ball_physics_components,
+                            systems::scene::attach_fielder_physics_components,
+                            systems::scene::attach_batter_physics_components,
+                            systems::scene::attach_boundary_physics_components,
+                            systems::scene::attach_wicket_physics_components,
+                        ),
+                        lobby::systems::unload_lobby_scene,
+                    )
+                        .chain()
                         .in_set(self.tick_set),
-                )
-                .add_systems(
-                    PostUpdate,
-                    lobby::systems::unload_lobby_scene.in_set(self.tick_set),
                 );
         }
 
@@ -108,14 +124,21 @@ where
         app.add_systems(
             Update,
             (
+                // before ticks, sync network state to physics
                 (
-                    systems::scene::attach_ball_physics_components,
-                    systems::scene::attach_fielder_physics_components,
-                    systems::scene::attach_batter_physics_components,
-                    systems::scene::attach_boundary_physics_components,
-                    systems::scene::attach_wicket_physics_components,
+                    systems::sync::sync_component::<SyncTransform, Transform, With<ShouldTick>>,
+                    systems::sync::sync_component::<SyncVelocity, Velocity, With<ShouldTick>>,
+                    systems::sync::sync_component::<SyncImpulse, ExternalImpulse, With<ShouldTick>>,
                 ),
-                self.tick_system.pipe(schedule::run_core_game_loop),
+                // run required ticks
+                self.tick_system
+                    .pipe(schedule::run_core_game_loop),
+                // after running all physics ticks, sync physics state back to network components
+                (
+                    systems::sync::sync_replicated::<Transform, SyncTransform, With<ShouldTick>>,
+                    systems::sync::sync_replicated::<Velocity, SyncVelocity, With<ShouldTick>>,
+                    systems::sync::sync_replicated::<ExternalImpulse, SyncImpulse, With<ShouldTick>>,
+                ),
             )
                 .chain()
                 .in_set(self.tick_set),

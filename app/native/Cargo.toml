@@ -9,3 +9,6 @@ publish = false
 [dependencies]
 cricket_pong_app_lib = { path = "../lib" }
 cfg-if = { version = "1.0" }
+
+[features]
+trace = [ "cricket_pong_app_lib/trace" ]

@@ -3,11 +3,11 @@ use bevy_ecs::{
     query::Or,
 };
 use bevy_log::debug;
-use bevy_math::prelude::{Vec2 as BevyVec2, Vec3 as BevyVec3};
+use bevy_math::prelude::Vec2;
 use bevy_time::prelude::Time;
-use bevy_transform::prelude::Transform as BevyTransform;
+use bevy_transform::prelude::Transform;
 
-use bevy_rapier2d::prelude::Velocity as RapierVelocity;
+use bevy_rapier2d::prelude::{ExternalImpulse, Velocity};
 
 use cricket_pong_base::{
     actions::{Action, Actions, BatterAction, FielderAction},
@@ -16,7 +16,6 @@ use cricket_pong_base::{
         batter::Batter,
         fielder::{Fielder, FielderPosition, FielderRing},
         phase::GamePhase,
-        physics::{ExternalImpulse, Transform, Vec2, Velocity},
         player::{PlayerOne, PlayerTwo},
     },
     lobby::components::GameInstance,
@@ -53,12 +52,12 @@ pub(crate) fn track_bowler_transform(
         }) else { continue };
 
         // enforce that the ball is not moving
-        *velocity = Velocity::from(&RapierVelocity::zero());
+        *velocity = Velocity::zero();
         // track the bowler paddle
-        let fielder_translation = BevyVec3::from(&*fielder_transform.translation);
+        let fielder_translation = fielder_transform.translation;
         let target_translation = fielder_translation
             - fielder_translation.normalize() * (Fielder::HDEPTH + Ball::RADIUS);
-        *transform = Transform::from(&BevyTransform::from_translation(target_translation));
+        *transform = Transform::from_translation(target_translation);
     }
 }
 
@@ -92,18 +91,18 @@ pub(crate) fn consume_actions(
     time: Res<Time>,
 ) {
     for (_, _, mut velocity) in fielders_query.iter_mut() {
-        *velocity = Velocity::from(&RapierVelocity::zero());
+        *velocity = Velocity::zero();
     }
     for (_, mut bat, mut velocity) in batters_query.iter_mut() {
         if let Some(swing_timer) = bat.timer.as_mut() {
             if *swing_timer <= 0. {
                 *bat.timer = None;
-                *velocity.angular = 0.;
+                velocity.angvel = 0.;
             } else {
                 *swing_timer -= time.delta_seconds();
             }
         } else {
-            *velocity.angular = 0.;
+            velocity.angvel = 0.;
         }
     }
 
@@ -137,10 +136,8 @@ pub(crate) fn consume_actions(
                 }) else { continue; };
 
                 let direction_vector =
-                    (-BevyVec2::new(transform.translation.x, transform.translation.y)).normalize();
-                *impulse.linear = Vec2::from(
-                    &(BevyVec2::from(&*impulse.linear) + direction_vector * Fielder::BOWL_IMPULSE),
-                );
+                    (-Vec2::new(transform.translation.x, transform.translation.y)).normalize();
+                impulse.impulse = impulse.impulse + direction_vector * Fielder::BOWL_IMPULSE;
                 phase.set_active();
             }
             Action::Fielder(movement) => {
@@ -156,7 +153,7 @@ pub(crate) fn consume_actions(
                 let Some(rotation_direction) = movement.rotation_direction() else { continue };
                 for (instance, fielder, mut velocity) in fielders_query.iter_mut() {
                     if instance == game_instance && *fielder.ring == ring_to_match {
-                        *velocity.angular = rotation_direction * Fielder::ROTATION_SPEED;
+                        velocity.angvel = rotation_direction * Fielder::ROTATION_SPEED;
                     }
                 }
             }
@@ -178,7 +175,7 @@ pub(crate) fn consume_actions(
                             }
                             _ => {}
                         };
-                        *velocity.angular = angular_velocity;
+                        velocity.angvel = angular_velocity;
                     }
                 }
             }

@@ -1,11 +1,10 @@
 use bevy::prelude::{
-    Added, App, Entity, In, Name, NextState, Or, Query, ResMut, Startup, States, SystemSet, Update,
+    Added, App, Entity, Name, NextState, Or, Query, ResMut, Startup, States, SystemSet, Update,
 };
 
 use bevy_geppetto::Test;
 
 use cricket_pong_controls::PlayerControllerPlugin;
-use cricket_pong_game::{lobby::components::GameInstance, GameplayPlugin};
 use cricket_pong_graphics::GraphicsPlugin;
 
 use cricket_pong_app_lib::{
@@ -13,7 +12,7 @@ use cricket_pong_app_lib::{
         self,
         components::{PredictionOf, SourceOf},
     },
-    AppScreen, OnlineGameplaySet,
+    AppScreen,
 };
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
@@ -48,20 +47,13 @@ fn hydrate_names(
     }
 }
 
-fn noop(_: In<Vec<(GameInstance, Vec<Entity>)>>) {}
-
 fn main() {
     Test {
         label: "Game sandbox".to_string(),
         setup: |app: &mut App| {
             app.add_state::<TestState>()
                 .add_state::<AppScreen>()
-                .add_plugins(networking::NetworkPlugin)
-                .add_plugins(GameplayPlugin::new(
-                    OnlineGameplaySet::Tick,
-                    networking::send_and_prepare_inputs,
-                    noop,
-                ))
+                .add_plugins(networking::OnlineGameplayPlugin)
                 .register_type::<networking::components::SourceOf>()
                 .register_type::<networking::components::PredictionOf>()
                 .add_plugins(GraphicsPlugin::new(TestState::Complete))

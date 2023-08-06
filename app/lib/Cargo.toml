@@ -13,9 +13,13 @@ cricket_pong_graphics = { path = "../../graphics" }
 bevy = "0.11"
 bevy_egui = { version = "0.21" }
 naia-bevy-client = { git = "https://github.com/anellie/naia", branch = "bevy-0.11", features = ["transport_webrtc"]  }
+bevy_rapier2d = { version = "0.22" }
 
 [dev-dependencies]
 bevy_geppetto = { git = "https://github.com/snendev/bevy_geppetto.git", rev = "b42bb4b" }
+
+[features]
+trace = [ "bevy/trace_chrome" ]
 
 [[test]]
 name = "e2e-client"

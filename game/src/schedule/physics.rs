@@ -1,7 +1,6 @@
 use bevy_ecs::{
-    prelude::{IntoSystemConfigs, IntoSystemSetConfigs, Schedule, SystemSet},
-    query::With,
-    system::{Query, SystemParam},
+    prelude::{IntoSystemConfigs, IntoSystemSetConfigs, Query, Schedule, SystemSet, With},
+    system::SystemParam,
 };
 
 use bevy_rapier2d::prelude::{
