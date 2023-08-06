@@ -1,10 +1,11 @@
 use bevy_ecs::prelude::Bundle;
 use bevy_render::prelude::SpatialBundle;
-
-use bevy_rapier2d::prelude::{Collider, Sensor};
-
 use bevy_transform::prelude::Transform;
-use cricket_pong_base::components::boundary::Boundary;
+
+use cricket_pong_base::{
+    components::boundary::Boundary,
+    rapier::prelude::{Collider, Sensor},
+};
 
 #[derive(Bundle)]
 pub struct BoundaryPhysicsBundle {

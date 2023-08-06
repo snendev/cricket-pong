@@ -2,9 +2,10 @@ use bevy_ecs::prelude::Bundle;
 use bevy_render::prelude::SpatialBundle;
 use bevy_transform::prelude::Transform;
 
-use bevy_rapier2d::prelude::{Collider, Sensor};
-
-use cricket_pong_base::components::wicket::Wicket;
+use cricket_pong_base::{
+    components::wicket::Wicket,
+    rapier::prelude::{Collider, Sensor},
+};
 
 #[derive(Bundle)]
 pub struct WicketPhysicsBundle {

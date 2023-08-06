@@ -6,7 +6,7 @@ use naia_bevy_client::{
     Client,
 };
 
-use super::ConnectionState;
+use crate::networking::ConnectionState;
 
 pub(crate) fn inititate_connection(mut client: Client) {
     // create a socket

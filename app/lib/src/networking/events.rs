@@ -1,4 +1,4 @@
-use bevy::prelude::{debug, info, Commands, Entity, EventReader, Name, Query};
+use bevy::prelude::{debug, Commands, Entity, EventReader, Name, Query};
 
 use cricket_pong_controls::Controller;
 use cricket_pong_graphics::ShouldRender;
@@ -25,7 +25,7 @@ use cricket_pong_game::{
     ShouldTick,
 };
 
-use super::components::{PredictionOf, SourceOf};
+use crate::networking::components::{PredictionOf, SourceOf};
 
 pub fn receive_entity_assignment_message(
     mut event_reader: EventReader<MessageEvents>,
@@ -56,7 +56,6 @@ pub fn handle_insert_position(
 ) {
     for event in event_reader.iter() {
         for entity in event.read::<Position>() {
-            info!("Inserted position for entity: ({:?})", entity);
             match query.get(entity) {
                 Ok((position, source)) => {
                     commands.entity(source.0).insert(position.clone());

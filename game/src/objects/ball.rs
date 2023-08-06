@@ -2,7 +2,7 @@ use bevy_ecs::prelude::Bundle;
 use bevy_render::prelude::SpatialBundle;
 use bevy_transform::prelude::Transform;
 
-use bevy_rapier2d::prelude::{
+use cricket_pong_base::rapier::prelude::{
     ActiveEvents, Collider, ColliderMassProperties, ExternalImpulse, RigidBody, Velocity,
 };
 

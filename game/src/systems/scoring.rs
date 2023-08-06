@@ -4,8 +4,6 @@ use bevy_ecs::{
 };
 use bevy_log::debug;
 
-use bevy_rapier2d::{prelude::CollisionEvent, rapier::prelude::CollisionEventFlags};
-
 use cricket_pong_base::{
     components::{
         ball::Ball,
@@ -17,6 +15,7 @@ use cricket_pong_base::{
         wicket::Wicket,
     },
     lobby::components::GameInstance,
+    rapier::{prelude::CollisionEvent, rapier::prelude::CollisionEventFlags},
 };
 
 use crate::ShouldTick;

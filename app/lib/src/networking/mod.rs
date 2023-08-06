@@ -1,6 +1,6 @@
 use bevy::prelude::{
-    in_state, App, Component, Entity, In, IntoSystemConfigs, IntoSystemSetConfig,
-    IntoSystemSetConfigs, NextState, OnEnter, OnExit, Plugin, ResMut, States, SystemSet, Update,
+    in_state, App, Component, IntoSystemConfigs, IntoSystemSetConfig, IntoSystemSetConfigs,
+    NextState, OnEnter, OnExit, Plugin, ResMut, States, SystemSet, Update,
 };
 
 use naia_bevy_client::{ClientConfig, Plugin as ClientPlugin, ReceiveEvents};
@@ -19,7 +19,7 @@ use cricket_pong_game::{
     GameplayPlugin,
 };
 
-use crate::{noop, AppScreen};
+use crate::noop;
 
 pub mod components;
 pub(crate) mod resources;
@@ -57,65 +57,79 @@ fn exit_online_game_state(mut state: ResMut<NextState<ConnectionState>>) {
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
 pub enum OnlineGameplaySet {
     Tick,
+    PrepareRollback,
     Rollback,
 }
 
-pub struct OnlineGameplayPlugin;
+pub struct OnlineGameplayPlugin<State: States> {
+    active_screen: State,
+}
 
-impl Plugin for OnlineGameplayPlugin {
+impl<State> OnlineGameplayPlugin<State>
+where
+    State: States,
+{
+    pub fn new(active_screen: State) -> Self {
+        OnlineGameplayPlugin { active_screen }
+    }
+}
+
+impl<State> Plugin for OnlineGameplayPlugin<State>
+where
+    State: States + Copy,
+{
     fn build(&self, app: &mut App) {
-        app.init_resource::<TickHistory>()
-            .add_plugins(ClientPlugin::new(ClientConfig::default(), protocol()))
-            .add_state::<ConnectionState>()
-            .add_systems(OnEnter(AppScreen::OnlineGame), enter_online_game_state)
-            .add_systems(OnExit(AppScreen::OnlineGame), exit_online_game_state)
-            .add_systems(
-                OnEnter(ConnectionState::Connecting),
-                connection::inititate_connection.run_if(in_state(AppScreen::OnlineGame)),
+        app.configure_sets(
+            Update,
+            (
+                ReceiveEvents.run_if(in_state(self.active_screen)),
+                OnlineGameplaySet::Tick.run_if(in_state(self.active_screen)),
+                OnlineGameplaySet::PrepareRollback.run_if(in_state(self.active_screen)),
+                OnlineGameplaySet::Rollback.run_if(in_state(self.active_screen)),
             )
-            .add_systems(
-                Update,
-                (
-                    connection::connection_events,
-                    connection::disconnection_events,
-                    connection::rejection_events,
-                    events::receive_entity_assignment_message,
-                    events::handle_insert_position,
-                    events::spawn_predictions,
-                )
-                    .run_if(in_state(AppScreen::OnlineGame))
-                    .in_set(ReceiveEvents),
+                .chain(),
+        )
+        .init_resource::<TickHistory>()
+        .add_plugins(ClientPlugin::new(ClientConfig::default(), protocol()))
+        .add_state::<ConnectionState>()
+        .add_systems(OnEnter(self.active_screen), enter_online_game_state)
+        .add_systems(OnExit(self.active_screen), exit_online_game_state)
+        .add_systems(
+            OnEnter(ConnectionState::Connecting),
+            connection::inititate_connection.run_if(in_state(self.active_screen)),
+        )
+        .add_systems(
+            Update,
+            (
+                connection::connection_events,
+                connection::disconnection_events,
+                connection::rejection_events,
+                events::receive_entity_assignment_message,
+                events::handle_insert_position,
+                events::spawn_predictions,
             )
-            .configure_sets(
-                Update,
-                (
-                    OnlineGameplaySet::Tick.run_if(in_state(AppScreen::OnlineGame)),
-                    OnlineGameplaySet::Rollback
-                        .after(OnlineGameplaySet::Tick)
-                        .run_if(in_state(AppScreen::OnlineGame)),
-                )
-                    .after(ReceiveEvents),
+                .run_if(in_state(self.active_screen))
+                .in_set(ReceiveEvents),
+        )
+        .add_plugins(GameplayPlugin::new(
+            OnlineGameplaySet::Tick,
+            tick::send_and_prepare_inputs,
+            noop,
+        ))
+        .add_systems(
+            Update,
+            (
+                rollback_component::<SyncTransform>,
+                rollback_component::<SyncVelocity>,
+                rollback_component::<SyncImpulse>,
+                rollback_component::<Batter>,
             )
-            .add_plugins(GameplayPlugin::new(
-                OnlineGameplaySet::Tick,
-                tick::send_and_prepare_inputs,
-                noop,
-            ))
-            .add_plugins(GameplayPlugin::new(
-                OnlineGameplaySet::Rollback,
-                rollback::replay_ticks,
-                noop,
-            ))
-            .add_systems(
-                Update,
-                (
-                    rollback_component::<SyncTransform>,
-                    rollback_component::<SyncVelocity>,
-                    rollback_component::<SyncImpulse>,
-                    rollback_component::<Batter>,
-                )
-                    .before(OnlineGameplaySet::Rollback)
-                    .after(OnlineGameplaySet::Tick),
-            );
+                .in_set(OnlineGameplaySet::PrepareRollback),
+        )
+        .add_plugins(GameplayPlugin::new(
+            OnlineGameplaySet::Rollback,
+            rollback::replay_ticks,
+            noop,
+        ));
     }
 }

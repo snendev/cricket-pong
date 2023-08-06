@@ -1,14 +1,14 @@
 use bevy::prelude::{debug, EventReader, Query, ResMut};
 
-use bevy_rapier2d::prelude::RapierConfiguration;
 use naia_bevy_client::{events::ClientTickEvent, Client};
 
 use cricket_pong_game::base::{
     actions::Actions,
     protocol::{channels::PlayerActionsChannel, messages::ActionMessage},
+    rapier::prelude::RapierConfiguration,
 };
 
-use super::{components::SourceOf, resources::TickHistory};
+use crate::networking::{components::SourceOf, resources::TickHistory};
 
 pub fn send_and_prepare_inputs(
     mut client: Client,

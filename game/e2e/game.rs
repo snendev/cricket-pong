@@ -8,13 +8,12 @@ use bevy_ecs::{
     system::In,
 };
 
-use bevy_rapier2d::render::RapierDebugRenderPlugin;
-
 use bevy_geppetto::Test;
 
 use cricket_pong_base::{
     components::player::{PlayerOne, PlayerTwo},
     lobby::components::{GameInstance, GameLobby},
+    rapier::render::RapierDebugRenderPlugin,
 };
 use cricket_pong_controls::{Controller, PlayerControllerPlugin};
 use cricket_pong_graphics::{GraphicsPlugin, ShouldRender};

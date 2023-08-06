@@ -3,12 +3,8 @@ use std::marker::PhantomData;
 use bevy_app::prelude::{App, Plugin, Update};
 use bevy_ecs::prelude::{Component, Entity, IntoSystem, IntoSystemConfigs, SystemSet, With};
 use bevy_math::prelude::Vec2;
-
-use bevy_rapier2d::prelude::{
-    ExternalImpulse, RapierConfiguration, RapierPhysicsPlugin, TimestepMode, Velocity,
-};
-
 use bevy_transform::prelude::Transform;
+
 pub use cricket_pong_base::{
     self as base,
     actions::Actions,
@@ -16,6 +12,9 @@ pub use cricket_pong_base::{
         ExternalImpulse as SyncImpulse, Transform as SyncTransform, Velocity as SyncVelocity,
     },
     lobby::{self, components::GameInstance},
+    rapier::prelude::{
+        ExternalImpulse, RapierConfiguration, RapierPhysicsPlugin, TimestepMode, Velocity,
+    },
 };
 
 mod objects;
@@ -115,8 +114,7 @@ where
                         ),
                         lobby::systems::unload_lobby_scene,
                     )
-                        .chain()
-                        .in_set(self.tick_set),
+                        .chain(),
                 );
         }
 

@@ -1,6 +1,5 @@
 use bevy::prelude::{Component, EventReader, Query, ResMut, With, Without};
 
-use bevy_rapier2d::prelude::RapierConfiguration;
 use naia_bevy_client::{events::UpdateComponentEvents, sequence_greater_than, Replicate, Tick};
 
 use cricket_pong_game::base::{
@@ -9,9 +8,10 @@ use cricket_pong_game::base::{
         batter::Batter,
         physics::{ExternalImpulse, Transform, Velocity},
     },
+    rapier::prelude::RapierConfiguration,
 };
 
-use super::{
+use crate::networking::{
     components::{PredictionOf, SourceOf},
     resources::TickHistory,
 };

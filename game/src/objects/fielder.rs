@@ -3,12 +3,13 @@ use bevy_math::Vec2;
 use bevy_render::prelude::SpatialBundle;
 use bevy_transform::prelude::Transform;
 
-use bevy_rapier2d::prelude::{
-    CoefficientCombineRule, Collider, ColliderMassProperties, MassProperties, Restitution,
-    RigidBody, Velocity,
+use cricket_pong_base::{
+    components::fielder::Fielder,
+    rapier::prelude::{
+        CoefficientCombineRule, Collider, ColliderMassProperties, MassProperties, Restitution,
+        RigidBody, Velocity,
+    },
 };
-
-use cricket_pong_base::components::fielder::Fielder;
 
 #[derive(Bundle)]
 pub struct FielderPhysicsBundle {

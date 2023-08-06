@@ -3,11 +3,10 @@ use bevy_math::Vec2;
 use bevy_render::prelude::SpatialBundle;
 use bevy_transform::prelude::Transform;
 
-use bevy_rapier2d::prelude::{
-    Collider, ColliderMassProperties, MassProperties, RigidBody, Velocity,
+use cricket_pong_base::{
+    components::batter::Batter,
+    rapier::prelude::{Collider, ColliderMassProperties, MassProperties, RigidBody, Velocity},
 };
-
-use cricket_pong_base::components::batter::Batter;
 
 #[derive(Bundle)]
 pub struct BatterPhysicsBundle {

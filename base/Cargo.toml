@@ -12,5 +12,15 @@ bevy_ecs = { version = "0.11" }
 bevy_core = { version = "0.11" }
 bevy_math = { version = "0.11" }
 bevy_transform = { version = "0.11" }
-bevy_rapier2d = { version = "0.22" }
-naia-bevy-shared = { git = "https://github.com/anellie/naia", branch = "bevy-0.11"  }
+naia-bevy-shared = { git = "https://github.com/anellie/naia", branch = "bevy-0.11" }
+bevy_rapier2d = { version = "0.22", features = [
+    "enhanced-determinism",
+    "dim2",
+    "async-collider",
+    "parallel",
+], default-features = false }
+
+[features]
+debug = ["bevy_rapier2d/debug-render-2d"]
+headless = ["bevy_rapier2d/headless"]
+wasm = ["bevy_rapier2d/wasm-bindgen"]

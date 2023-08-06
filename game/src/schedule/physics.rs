@@ -3,12 +3,13 @@ use bevy_ecs::{
     system::SystemParam,
 };
 
-use bevy_rapier2d::prelude::{
-    BevyPhysicsHooks, PairFilterContextView, PhysicsSet as RapierPhysicsSet, RapierPhysicsPlugin,
-    SolverFlags,
+use cricket_pong_base::{
+    lobby::components::GameInstance,
+    rapier::prelude::{
+        BevyPhysicsHooks, PairFilterContextView, PhysicsSet as RapierPhysicsSet,
+        RapierPhysicsPlugin, SolverFlags,
+    },
 };
-
-use cricket_pong_base::lobby::components::GameInstance;
 
 use crate::ShouldTick;
 

@@ -7,8 +7,6 @@ use bevy_math::prelude::Vec2;
 use bevy_time::prelude::Time;
 use bevy_transform::prelude::Transform;
 
-use bevy_rapier2d::prelude::{ExternalImpulse, Velocity};
-
 use cricket_pong_base::{
     actions::{Action, Actions, BatterAction, FielderAction},
     components::{
@@ -19,6 +17,7 @@ use cricket_pong_base::{
         player::{PlayerOne, PlayerTwo},
     },
     lobby::components::GameInstance,
+    rapier::prelude::{ExternalImpulse, Velocity},
 };
 
 use crate::ShouldTick;
