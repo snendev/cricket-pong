@@ -21,6 +21,7 @@ bevy_geppetto = { git = "https://github.com/snendev/bevy_geppetto.git", rev = "b
 
 [features]
 trace = ["bevy/trace_chrome"]
+parallel = ["cricket_pong_game/parallel"]
 wasm = ["cricket_pong_game/wasm"]
 
 [[test]]

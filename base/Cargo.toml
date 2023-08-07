@@ -17,10 +17,10 @@ bevy_rapier2d = { version = "0.22", features = [
     "enhanced-determinism",
     "dim2",
     "async-collider",
-    "parallel",
 ], default-features = false }
 
 [features]
 debug = ["bevy_rapier2d/debug-render-2d"]
 headless = ["bevy_rapier2d/headless"]
+parallel = ["bevy_rapier2d/parallel"]
 wasm = ["bevy_rapier2d/wasm-bindgen"]

@@ -7,8 +7,8 @@ license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
-cricket_pong_app_lib = { path = "../lib" }
+cricket_pong_app_lib = { path = "../lib", features = ["parallel"] }
 cfg-if = { version = "1.0" }
 
 [features]
-trace = [ "cricket_pong_app_lib/trace" ]
+trace = ["cricket_pong_app_lib/trace"]

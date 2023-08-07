@@ -32,6 +32,7 @@ path = "../base"
 [features]
 debug = ["cricket_pong_base/debug"]
 headless = ["cricket_pong_base/headless"]
+parallel = ["cricket_pong_base/parallel"]
 wasm = ["cricket_pong_base/wasm"]
 
 [[test]]
