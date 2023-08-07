@@ -13,8 +13,8 @@ fn main() {
     App::default()
         .add_plugins((
             TaskPoolPlugin::default(),
-            TypeRegistrationPlugin::default(),
-            FrameCountPlugin::default(),
+            TypeRegistrationPlugin,
+            FrameCountPlugin,
             ScheduleRunnerPlugin::run_loop(Duration::from_millis(3)),
             LogPlugin::default(),
             TimePlugin,

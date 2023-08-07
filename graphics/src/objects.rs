@@ -21,16 +21,15 @@ use cricket_pong_base::components::{
 
 use crate::ShouldRender;
 
+type WithRenderedBall = (
+    With<Ball>,
+    With<ShouldRender>,
+    Or<(Added<Ball>, Added<Transform>, Added<ShouldRender>)>,
+);
+
 fn setup_ball_shape(
     mut commands: Commands,
-    added_ball_query: Query<
-        (Entity, &Transform),
-        (
-            With<Ball>,
-            With<ShouldRender>,
-            Or<(Added<Ball>, Added<Transform>, Added<ShouldRender>)>,
-        ),
-    >,
+    added_ball_query: Query<(Entity, &Transform), WithRenderedBall>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
@@ -45,15 +44,14 @@ fn setup_ball_shape(
     }
 }
 
+type WithAddedFielderTrack = (
+    With<ShouldRender>,
+    Or<(Added<FielderTrack>, Added<ShouldRender>)>,
+);
+
 fn setup_field_shape(
     mut commands: Commands,
-    added_fielder_ring_query: Query<
-        (Entity, &FielderTrack),
-        (
-            With<ShouldRender>,
-            Or<(Added<FielderTrack>, Added<ShouldRender>)>,
-        ),
-    >,
+    added_fielder_ring_query: Query<(Entity, &FielderTrack), WithAddedFielderTrack>,
 ) {
     for (entity, track) in added_fielder_ring_query.iter() {
         debug!("Attaching FieldTrack graphics for entity ({:?})", entity);
@@ -71,15 +69,14 @@ fn setup_field_shape(
     }
 }
 
+type WithAddedFielder = (
+    With<ShouldRender>,
+    Or<(Added<Fielder>, Added<Transform>, Added<ShouldRender>)>,
+);
+
 fn setup_fielder_shape(
     mut commands: Commands,
-    added_fielder_query: Query<
-        (Entity, &Transform, &Fielder),
-        (
-            With<ShouldRender>,
-            Or<(Added<Fielder>, Added<Transform>, Added<ShouldRender>)>,
-        ),
-    >,
+    added_fielder_query: Query<(Entity, &Transform, &Fielder), WithAddedFielder>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
@@ -98,16 +95,15 @@ fn setup_fielder_shape(
     }
 }
 
+type WithAddedBoundary = (
+    With<Boundary>,
+    With<ShouldRender>,
+    Or<(Added<Boundary>, Added<ShouldRender>)>,
+);
+
 fn setup_boundary_shape(
     mut commands: Commands,
-    added_boundary_query: Query<
-        Entity,
-        (
-            With<Boundary>,
-            With<ShouldRender>,
-            Or<(Added<Boundary>, Added<ShouldRender>)>,
-        ),
-    >,
+    added_boundary_query: Query<Entity, WithAddedBoundary>,
 ) {
     for entity in added_boundary_query.iter() {
         debug!("Attaching Boundary graphics for entity ({:?})", entity);
@@ -125,16 +121,15 @@ fn setup_boundary_shape(
     }
 }
 
+type WithAddedBatter = (
+    With<Batter>,
+    With<ShouldRender>,
+    Or<(Added<Batter>, Added<Transform>, Added<ShouldRender>)>,
+);
+
 fn setup_batter_shape(
     mut commands: Commands,
-    added_batter_query: Query<
-        (Entity, &Transform),
-        (
-            With<Batter>,
-            With<ShouldRender>,
-            Or<(Added<Batter>, Added<Transform>, Added<ShouldRender>)>,
-        ),
-    >,
+    added_batter_query: Query<(Entity, &Transform), WithAddedBatter>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
@@ -172,17 +167,13 @@ fn setup_batter_shape(
     }
 }
 
-fn setup_wicket_shape(
-    mut commands: Commands,
-    added_wicket_query: Query<
-        Entity,
-        (
-            With<Wicket>,
-            With<ShouldRender>,
-            Or<(Added<Wicket>, Added<ShouldRender>)>,
-        ),
-    >,
-) {
+type WithAddedWicket = (
+    With<Wicket>,
+    With<ShouldRender>,
+    Or<(Added<Wicket>, Added<ShouldRender>)>,
+);
+
+fn setup_wicket_shape(mut commands: Commands, added_wicket_query: Query<Entity, WithAddedWicket>) {
     for entity in added_wicket_query.iter() {
         debug!("Attaching Wicket graphics for entity ({:?})", entity);
         let shape = shapes::Circle {

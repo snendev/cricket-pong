@@ -31,9 +31,9 @@ impl UserEntities {
     }
 
     pub fn remove(&mut self, user: &UserKey) -> Option<Entity> {
-        self.user_to_entity_map.remove(user).and_then(|entity| {
+        self.user_to_entity_map.remove(user).map(|entity| {
             self.entity_to_user_map.remove(&entity);
-            Some(entity)
+            entity
         })
     }
 }

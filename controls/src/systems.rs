@@ -35,12 +35,11 @@ pub(crate) fn queue_inputs(
     }
 }
 
+type WithChangedController = Or<(Changed<Position>, Added<Controller>)>;
+
 pub(crate) fn sync_controllers(
     mut commands: Commands,
-    player_query: Query<
-        (Entity, &Position, &Controller),
-        Or<(Changed<Position>, Added<Controller>)>,
-    >,
+    player_query: Query<(Entity, &Position, &Controller), WithChangedController>,
 ) {
     for (entity, position, controller) in player_query.iter() {
         debug!(

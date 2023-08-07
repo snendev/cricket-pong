@@ -18,15 +18,9 @@ impl BowlScore {
 }
 
 // AKA an "inning"
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Scoreboard {
     scores: Vec<BowlScore>,
-}
-
-impl Default for Scoreboard {
-    fn default() -> Self {
-        Scoreboard { scores: Vec::new() }
-    }
 }
 
 impl Scoreboard {
@@ -62,6 +56,10 @@ impl Scoreboard {
 
     pub fn len(&self) -> usize {
         self.scores.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.scores.is_empty()
     }
 
     pub fn force_set(&mut self, index: usize, score: BowlScore) {

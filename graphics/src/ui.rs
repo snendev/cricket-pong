@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use bevy::{
     prelude::{
         Added, AlignItems, App, BackgroundColor, BuildChildren, ButtonBundle, Changed,
@@ -109,26 +111,17 @@ fn spawn_player_scoreboard(commands: &mut Commands, position: &Position, player:
         });
 }
 
+type WithAddedPlayer<Player, NotPlayer> = (
+    With<Player>,
+    Without<NotPlayer>,
+    With<ShouldRender>,
+    Or<(Added<Player>, Added<ShouldRender>)>,
+);
+
 fn spawn_scoreboard(
     mut commands: Commands,
-    player_one_query: Query<
-        &Position,
-        (
-            With<PlayerOne>,
-            Without<PlayerTwo>,
-            With<ShouldRender>,
-            Or<(Added<PlayerOne>, Added<ShouldRender>)>,
-        ),
-    >,
-    player_two_query: Query<
-        &Position,
-        (
-            With<PlayerTwo>,
-            Without<PlayerOne>,
-            With<ShouldRender>,
-            Or<(Added<PlayerTwo>, Added<ShouldRender>)>,
-        ),
-    >,
+    player_one_query: Query<&Position, WithAddedPlayer<PlayerOne, PlayerTwo>>,
+    player_two_query: Query<&Position, WithAddedPlayer<PlayerTwo, PlayerOne>>,
 ) {
     let Ok(position_one) = player_one_query.get_single() else { return };
     let Ok(position_two) = player_two_query.get_single() else { return };
@@ -144,7 +137,7 @@ fn track_scores(
     let player_one_score = scoreboard.player_score(Identity::One);
     let player_two_score = scoreboard.player_score(Identity::Two);
 
-    for (score, identity) in vec![
+    for (score, identity) in [
         (player_one_score, Identity::One),
         (player_two_score, Identity::Two),
     ] {
@@ -156,25 +149,16 @@ fn track_scores(
     }
 }
 
+type WithChangedPosition<Player, NotPlayer> = (
+    Changed<Position>,
+    With<Player>,
+    Without<NotPlayer>,
+    With<ShouldRender>,
+);
+
 fn track_positions(
-    player_one_query: Query<
-        &Position,
-        (
-            Changed<Position>,
-            With<PlayerOne>,
-            Without<PlayerTwo>,
-            With<ShouldRender>,
-        ),
-    >,
-    player_two_query: Query<
-        &Position,
-        (
-            Changed<Position>,
-            With<PlayerTwo>,
-            Without<PlayerOne>,
-            With<ShouldRender>,
-        ),
-    >,
+    player_one_query: Query<&Position, WithChangedPosition<PlayerOne, PlayerTwo>>,
+    player_two_query: Query<&Position, WithChangedPosition<PlayerTwo, PlayerOne>>,
     mut position_tracker_query: Query<(&mut Text, &PositionTracker), Without<ScoreTracker>>,
 ) {
     let position_one = player_one_query.get_single();
@@ -191,17 +175,13 @@ fn track_positions(
     }
 }
 
-fn spawn_over_tracker(
-    mut commands: Commands,
-    scoreboard_query: Query<
-        (),
-        (
-            With<Scoreboard>,
-            With<ShouldRender>,
-            Or<(Added<Scoreboard>, Added<ShouldRender>)>,
-        ),
-    >,
-) {
+type WithAddedScoreboard = (
+    With<Scoreboard>,
+    With<ShouldRender>,
+    Or<(Added<Scoreboard>, Added<ShouldRender>)>,
+);
+
+fn spawn_over_tracker(mut commands: Commands, scoreboard_query: Query<(), WithAddedScoreboard>) {
     for _ in scoreboard_query.iter() {
         commands
             .spawn((
@@ -303,12 +283,10 @@ fn spawn_gameover_panel(
     let Ok(scoreboard) = scoreboard_query.get_single() else { return };
     let player_one_score = scoreboard.player_score(Identity::One);
     let player_two_score = scoreboard.player_score(Identity::Two);
-    let winner = if player_one_score > player_two_score {
-        Some(Identity::One)
-    } else if player_one_score < player_two_score {
-        Some(Identity::Two)
-    } else {
-        None
+    let winner = match player_one_score.cmp(&player_two_score) {
+        Ordering::Less => Some(Identity::One),
+        Ordering::Equal => Some(Identity::Two),
+        Ordering::Greater => None,
     };
 
     commands
@@ -412,11 +390,8 @@ fn build_detect_return_selection_system<AppScreen: States + Copy>(
     move |button_query: Query<&Interaction, (Changed<Interaction>, With<ReturnButton>)>,
           mut state: ResMut<NextState<AppScreen>>| {
         for interaction in button_query.iter() {
-            match interaction {
-                Interaction::Pressed => {
-                    state.set(return_screen);
-                }
-                _ => {}
+            if interaction == &Interaction::Pressed {
+                state.set(return_screen);
             }
         }
     }

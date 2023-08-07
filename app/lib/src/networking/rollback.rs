@@ -23,11 +23,8 @@ fn get_latest_tick(mut event_reader: EventReader<UpdateComponentEvents>) -> Opti
             .read::<Translation>()
             .into_iter()
             .chain(events.read::<Rotation>())
-            .into_iter()
             .chain(events.read::<Velocity>())
-            .into_iter()
             .chain(events.read::<ExternalImpulse>())
-            .into_iter()
             .chain(events.read::<Batter>())
         {
             if let Some(last_tick) = latest_tick {

@@ -20,7 +20,7 @@ pub fn send_and_prepare_inputs(
 ) -> Vec<(u16, Actions)> {
     let mut ticks = Vec::new();
 
-    if tick_reader.len() > 0 {
+    if !tick_reader.is_empty() {
         physics_config.force_update_from_transform_changes = false;
     }
 

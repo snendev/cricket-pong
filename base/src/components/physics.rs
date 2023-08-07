@@ -179,7 +179,7 @@ impl std::fmt::Debug for Rotation {
 
 impl Default for Rotation {
     fn default() -> Self {
-        Quat::from(bevy_math::Quat::default()).into()
+        Quat::default().into()
     }
 }
 

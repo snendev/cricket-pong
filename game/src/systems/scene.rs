@@ -25,20 +25,21 @@ use crate::{
     ShouldTick,
 };
 
+type WithAddedLobby = (
+    With<ShouldTick>,
+    Without<GamePhase>,
+    Or<(Added<GameLobby>, Added<ShouldTick>)>,
+);
+
+type WithPlayer<Player> = (With<Player>, With<ShouldTick>);
+
 // NOTE: only spawns scenes for games that are hosted by this app
 // (via ShouldTick on the GameLobby and Player components)
 pub(crate) fn spawn_scene(
     mut commands: Commands,
-    mut added_games_query: Query<
-        (Entity, &mut GameLobby, &GameInstance),
-        (
-            With<ShouldTick>,
-            Without<GamePhase>,
-            Or<(Added<GameLobby>, Added<ShouldTick>)>,
-        ),
-    >,
-    player_one_query: Query<(Entity, &GameInstance), (With<PlayerOne>, With<ShouldTick>)>,
-    player_two_query: Query<(Entity, &GameInstance), (With<PlayerTwo>, With<ShouldTick>)>,
+    mut added_games_query: Query<(Entity, &mut GameLobby, &GameInstance), WithAddedLobby>,
+    player_one_query: Query<(Entity, &GameInstance), WithPlayer<PlayerOne>>,
+    player_two_query: Query<(Entity, &GameInstance), WithPlayer<PlayerTwo>>,
 ) -> Vec<(GameInstance, Vec<Entity>)> {
     let mut entities = Vec::new();
     for (lobby_entity, mut lobby, instance) in added_games_query.iter_mut() {
@@ -137,11 +138,13 @@ pub(crate) fn spawn_scene(
     entities
 }
 
+type WithAddedBall = (Added<Ball>, With<ShouldTick>);
+
 pub(crate) fn attach_ball_physics_components(
     mut commands: Commands,
     added_ball_query: Query<
         (Entity, &Translation, &Rotation, &Velocity, &ExternalImpulse),
-        (Added<Ball>, With<ShouldTick>),
+        WithAddedBall,
     >,
 ) {
     for (entity, translation, rotation, velocity, impulse) in added_ball_query.iter() {
@@ -154,11 +157,13 @@ pub(crate) fn attach_ball_physics_components(
     }
 }
 
+type WithAddedFielder = (Added<Fielder>, With<ShouldTick>);
+
 pub(crate) fn attach_fielder_physics_components(
     mut commands: Commands,
     added_fielder_query: Query<
         (Entity, &Fielder, &Translation, &Rotation, &Velocity),
-        (Added<Fielder>, With<ShouldTick>),
+        WithAddedFielder,
     >,
 ) {
     for (entity, fielder, translation, rotation, velocity) in added_fielder_query.iter() {
@@ -171,12 +176,11 @@ pub(crate) fn attach_fielder_physics_components(
     }
 }
 
+type WithAddedBatter = (Added<Batter>, With<ShouldTick>);
+
 pub(crate) fn attach_batter_physics_components(
     mut commands: Commands,
-    added_batter_query: Query<
-        (Entity, &Translation, &Rotation, &Velocity),
-        (Added<Batter>, With<ShouldTick>),
-    >,
+    added_batter_query: Query<(Entity, &Translation, &Rotation, &Velocity), WithAddedBatter>,
 ) {
     for (entity, translation, rotation, velocity) in added_batter_query.iter() {
         debug!("Batter physics components added to entity ({:?})", entity);
@@ -187,12 +191,11 @@ pub(crate) fn attach_batter_physics_components(
     }
 }
 
+type WithAddedBoundary = (Added<Boundary>, With<ShouldTick>);
+
 pub(crate) fn attach_boundary_physics_components(
     mut commands: Commands,
-    added_boundary_query: Query<
-        (Entity, &Translation, &Rotation),
-        (Added<Boundary>, With<ShouldTick>),
-    >,
+    added_boundary_query: Query<(Entity, &Translation, &Rotation), WithAddedBoundary>,
 ) {
     for (entity, translation, rotation) in added_boundary_query.iter() {
         debug!("Boundary physics components added to entity ({:?})", entity);
@@ -202,9 +205,11 @@ pub(crate) fn attach_boundary_physics_components(
     }
 }
 
+type WithAddedWicket = (Added<Wicket>, With<ShouldTick>);
+
 pub(crate) fn attach_wicket_physics_components(
     mut commands: Commands,
-    added_wicket_query: Query<(Entity, &Translation, &Rotation), (Added<Wicket>, With<ShouldTick>)>,
+    added_wicket_query: Query<(Entity, &Translation, &Rotation), WithAddedWicket>,
 ) {
     for (entity, translation, rotation) in added_wicket_query.iter() {
         debug!("Wicket physics components added to entity ({:?})", entity);

@@ -26,14 +26,19 @@ pub(crate) struct ScoringSet;
 #[derive(Event)]
 pub(crate) struct ScoreEvent(GameInstance, PositionKind, u8);
 
+type WithWicket = (With<Wicket>, Without<Ball>, With<ShouldTick>);
+type WithBoundary = (With<Boundary>, Without<Ball>, With<ShouldTick>);
+type WithFielder = (With<Fielder>, Without<Ball>, With<ShouldTick>);
+type WithoutBall = (Without<Ball>, With<ShouldTick>);
+
 pub(crate) fn handle_collisions(
     mut collision_events: EventReader<CollisionEvent>,
     mut score_writer: EventWriter<ScoreEvent>,
     mut ball_query: Query<(&GameInstance, &mut Ball), With<ShouldTick>>,
-    game_phase_query: Query<(&GameInstance, &GamePhase), (Without<Ball>, With<ShouldTick>)>,
-    wicket_query: Query<&GameInstance, (With<Wicket>, Without<Ball>, With<ShouldTick>)>,
-    boundary_query: Query<&GameInstance, (With<Boundary>, Without<Ball>, With<ShouldTick>)>,
-    fielder_query: Query<&GameInstance, (With<Fielder>, Without<Ball>, With<ShouldTick>)>,
+    game_phase_query: Query<(&GameInstance, &GamePhase), WithoutBall>,
+    wicket_query: Query<&GameInstance, WithWicket>,
+    boundary_query: Query<&GameInstance, WithBoundary>,
+    fielder_query: Query<&GameInstance, WithFielder>,
 ) {
     for event in collision_events.iter() {
         let collision_data = match event {
@@ -78,41 +83,35 @@ pub(crate) fn handle_collisions(
                 score_writer.send(ScoreEvent(game_instance.clone(), PositionKind::Batter, 1));
                 *ball.passes = 0;
             }
-        } else {
-            if wicket_query
-                .get(other_entity)
-                .is_ok_and(|instance| instance == game_instance)
-            {
-                // score 3 for fielder if the ball hits the wicket
-                score_writer.send(ScoreEvent(game_instance.clone(), PositionKind::Fielder, 3));
+        } else if wicket_query
+            .get(other_entity)
+            .is_ok_and(|instance| instance == game_instance)
+        {
+            // score 3 for fielder if the ball hits the wicket
+            score_writer.send(ScoreEvent(game_instance.clone(), PositionKind::Fielder, 3));
+            *ball.passes = 0;
+        } else if fielder_query
+            .get(other_entity)
+            .is_ok_and(|instance| instance == game_instance)
+        {
+            // score 1 for fielder if the ball is passed between paddles 5 times
+            *ball.passes += 1;
+            if *ball.passes >= 5 {
+                score_writer.send(ScoreEvent(game_instance.clone(), PositionKind::Fielder, 1));
                 *ball.passes = 0;
-            } else if fielder_query
-                .get(other_entity)
-                .is_ok_and(|instance| instance == game_instance)
-            {
-                // score 1 for fielder if the ball is passed between paddles 5 times
-                *ball.passes += 1;
-                if *ball.passes >= 5 {
-                    score_writer.send(ScoreEvent(game_instance.clone(), PositionKind::Fielder, 1));
-                    *ball.passes = 0;
-                }
             }
         }
     }
 }
 
+type WithPlayer<Player, NotPlayer> = (With<Player>, Without<NotPlayer>, With<ShouldTick>);
+
 pub(crate) fn register_goals(
     mut score_events: EventReader<ScoreEvent>,
-    mut player_one_query: Query<
-        (&GameInstance, &mut Position),
-        (With<PlayerOne>, Without<PlayerTwo>, With<ShouldTick>),
-    >,
-    mut player_two_query: Query<
-        (&GameInstance, &mut Position),
-        (With<PlayerTwo>, Without<PlayerOne>, With<ShouldTick>),
-    >,
+    mut player_one_query: Query<(&GameInstance, &mut Position), WithPlayer<PlayerOne, PlayerTwo>>,
+    mut player_two_query: Query<(&GameInstance, &mut Position), WithPlayer<PlayerTwo, PlayerOne>>,
     mut scoreboard_query: Query<(&GameInstance, &mut Scoreboard), With<ShouldTick>>,
-    mut game_phase_query: Query<(&GameInstance, &mut GamePhase), (Without<Ball>, With<ShouldTick>)>,
+    mut game_phase_query: Query<(&GameInstance, &mut GamePhase), WithoutBall>,
 ) {
     for ScoreEvent(game_instance, scoring_position, scored_points) in score_events.iter() {
         let Some(mut player_one_position) = player_one_query.iter_mut().find_map(|(instance, player)| {

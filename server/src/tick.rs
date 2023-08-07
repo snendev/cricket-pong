@@ -58,8 +58,8 @@ pub fn send_score_mesasges(
                 let score = scoreboard.get(index).unwrap();
                 for user_key in users_in_room.iter() {
                     server.send_message::<ScoreMessageChannel, ScoreMessage>(
-                        &user_key,
-                        &ScoreMessage::new(score.clone(), index),
+                        user_key,
+                        &ScoreMessage::new(*score, index),
                     );
                 }
             }

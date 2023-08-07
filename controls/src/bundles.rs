@@ -27,6 +27,12 @@ impl BatterControllerBundle {
     }
 }
 
+impl Default for BatterControllerBundle {
+    fn default() -> Self {
+        BatterControllerBundle::new()
+    }
+}
+
 #[derive(Bundle)]
 pub struct BatterControllerBundle2 {
     input_manager: InputManagerBundle<BatterControl>,
@@ -47,6 +53,12 @@ impl BatterControllerBundle2 {
                 input_map,
             },
         }
+    }
+}
+
+impl Default for BatterControllerBundle2 {
+    fn default() -> Self {
+        BatterControllerBundle2::new()
     }
 }
 
@@ -74,6 +86,12 @@ impl FielderControllerBundle {
     }
 }
 
+impl Default for FielderControllerBundle {
+    fn default() -> Self {
+        FielderControllerBundle::new()
+    }
+}
+
 #[derive(Bundle)]
 pub struct FielderControllerBundle2 {
     input_manager: InputManagerBundle<FielderControl>,
@@ -95,5 +113,11 @@ impl FielderControllerBundle2 {
                 input_map,
             },
         }
+    }
+}
+
+impl Default for FielderControllerBundle2 {
+    fn default() -> Self {
+        FielderControllerBundle2::new()
     }
 }
