@@ -16,6 +16,14 @@ impl Default for Batter {
     }
 }
 
+impl std::fmt::Debug for Batter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Batter")
+            .field("timer", &*self.timer)
+            .finish()
+    }
+}
+
 impl Batter {
     pub const RADIUS: f32 = 30.;
     pub const ROTATION_SPEED: f32 = std::f32::consts::FRAC_PI_6;

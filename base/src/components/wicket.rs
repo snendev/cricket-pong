@@ -9,7 +9,7 @@ use crate::components::{
     physics::{Rotation, Translation},
 };
 
-#[derive(Component, Default, Replicate)]
+#[derive(Component, Debug, Default, Replicate)]
 pub struct Wicket;
 
 impl Wicket {

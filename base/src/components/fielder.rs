@@ -6,9 +6,7 @@ use bevy_rapier2d::prelude::Velocity as RapierVelocity;
 
 use naia_bevy_shared::{Property, Replicate, Serde};
 
-use crate::components::physics::{
-    Quat as SyncQuat, Rotation, Translation, Vec3 as SyncVec3, Velocity,
-};
+use crate::components::physics::{Rotation, Translation, Velocity};
 
 #[derive(Clone, Copy, Debug, PartialEq, Serde)]
 pub enum FielderRing {
@@ -105,6 +103,15 @@ pub struct Fielder {
     pub ring: Property<FielderRing>,
 }
 
+impl std::fmt::Debug for Fielder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Fielder")
+            .field("position", &*self.position)
+            .field("ring", &*self.ring)
+            .finish()
+    }
+}
+
 impl Fielder {
     pub const MASS: f32 = 100.;
     pub const ROTATION_SPEED: f32 = std::f32::consts::FRAC_PI_4;
@@ -145,8 +152,8 @@ impl FielderBundle {
         FielderBundle {
             name: Fielder::name(),
             fielder: Fielder::new(position, ring),
-            translation: SyncVec3::from(translation).into(),
-            rotation: SyncQuat::from(rotation).into(),
+            translation: translation.into(),
+            rotation: rotation.into(),
             velocity: Velocity::from(&RapierVelocity::zero()),
         }
     }

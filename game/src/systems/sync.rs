@@ -2,11 +2,12 @@ use bevy_ecs::{
     prelude::{Component, Query},
     query::ReadOnlyWorldQuery,
 };
+use bevy_log::{debug, info};
 use bevy_transform::prelude::Transform;
 
 use naia_bevy_shared::Replicate;
 
-use cricket_pong_base::components::physics::{Quat, Rotation, Translation, Vec3};
+use cricket_pong_base::components::physics::{Rotation, Translation};
 
 pub fn sync_component<Source, Target, Filter>(mut query: Query<(&Source, &mut Target), Filter>)
 where
@@ -37,8 +38,8 @@ pub fn sync_transforms_from_replicated<Filter>(
     Filter: ReadOnlyWorldQuery,
 {
     for (translation, rotation, mut transform) in query.iter_mut() {
-        transform.translation = Vec3::from(translation).into();
-        transform.rotation = Quat::from(rotation).into();
+        transform.translation = translation.into();
+        transform.rotation = rotation.into();
     }
 }
 
@@ -48,7 +49,7 @@ pub fn sync_transforms_to_replicated<Filter>(
     Filter: ReadOnlyWorldQuery,
 {
     for (mut translation, mut rotation, transform) in query.iter_mut() {
-        translation.mirror(&Translation::from(Vec3::from(transform.translation)));
-        rotation.mirror(&Rotation::from(Quat::from(transform.rotation)));
+        translation.mirror(&Translation::from(transform.translation));
+        rotation.mirror(&Rotation::from(transform.rotation));
     }
 }

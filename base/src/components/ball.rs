@@ -5,7 +5,7 @@ use naia_bevy_shared::Replicate;
 
 use crate::components::physics::{ExternalImpulse, Rotation, Translation, Velocity};
 
-#[derive(Component, Default, Replicate)]
+#[derive(Component, Debug, Default, Replicate)]
 pub struct Ball;
 
 impl Ball {
