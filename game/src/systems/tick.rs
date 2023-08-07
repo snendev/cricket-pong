@@ -22,6 +22,9 @@ use cricket_pong_base::{
 
 use crate::ShouldTick;
 
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub(crate) struct ActionsSet;
+
 type WithBall = (With<Ball>, With<ShouldTick>);
 type WithoutBall = (Without<Ball>, With<ShouldTick>);
 
@@ -59,9 +62,6 @@ pub(crate) fn track_bowler_transform(
         *transform = Transform::from_translation(target_translation);
     }
 }
-
-#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
-pub(crate) struct ActionsSet;
 
 type WithoutObjects = (
     Without<Fielder>,
