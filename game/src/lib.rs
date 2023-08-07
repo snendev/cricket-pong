@@ -82,6 +82,7 @@ where
         if !GameplayMarkerPlugin::is_added(app) {
             let (schedule_label, schedule) = schedule::build_core_tick_schedule();
             app.add_plugins(GameplayMarkerPlugin)
+                .add_event::<systems::scoring::ScoreEvent>()
                 .init_resource::<Actions>()
                 .insert_resource(RapierConfiguration {
                     gravity: Vec2::ZERO,
