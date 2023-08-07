@@ -1,30 +1,36 @@
 use bevy_core::Name;
 use bevy_ecs::prelude::{Bundle, Component};
 
-use naia_bevy_shared::{Property, Replicate, Serde};
+use naia_bevy_shared::Serde;
 
 use crate::components::player::Identity;
 
 #[derive(Clone, Copy, Debug, PartialEq, Serde)]
 pub struct BowlScore {
     pub scorer: Identity,
-    pub value: u16,
+    pub value: u8,
+}
+
+impl BowlScore {
+    pub fn new(scorer: Identity, value: u8) -> Self {
+        BowlScore { scorer, value }
+    }
 }
 
 // AKA an "inning"
-#[derive(Component, Replicate)]
+#[derive(Component)]
 pub struct Scoreboard {
-    scores: Property<Vec<BowlScore>>,
+    scores: Vec<BowlScore>,
 }
 
 impl Default for Scoreboard {
     fn default() -> Self {
-        Scoreboard::new_complete(Vec::new())
+        Scoreboard { scores: Vec::new() }
     }
 }
 
 impl Scoreboard {
-    pub fn player_score(&self, identity: Identity) -> u16 {
+    pub fn player_score(&self, identity: Identity) -> u8 {
         self.scores
             .iter()
             .filter_map(|score| {
@@ -52,6 +58,15 @@ pub enum BowlResult {
 impl Scoreboard {
     pub fn get(&self, index: usize) -> Option<&BowlScore> {
         self.scores.get(index)
+    }
+
+    pub fn len(&self) -> usize {
+        self.scores.len()
+    }
+
+    pub fn force_set(&mut self, index: usize, score: BowlScore) {
+        self.scores.truncate(index);
+        self.scores.push(score);
     }
 
     pub fn push(&mut self, score: BowlScore) -> BowlResult {

@@ -66,7 +66,7 @@ pub(crate) fn register_goals(
 
         let current_phase = phase.inner();
 
-        let mut score_points = move |scored_points: u16, scoring_position: PositionKind| {
+        let mut score_points = move |scored_points: u8, scoring_position: PositionKind| {
             debug!(
                 "Scoring {} points for {} in instance ({})",
                 scored_points, scoring_position, game_instance
@@ -79,10 +79,7 @@ pub(crate) fn register_goals(
                 return;
             };
 
-            let bowl_result = scoreboard.push(BowlScore {
-                scorer,
-                value: scored_points,
-            });
+            let bowl_result = scoreboard.push(BowlScore::new(scorer, scored_points));
             phase.set_bowling();
             match bowl_result {
                 BowlResult::None => {}

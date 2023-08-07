@@ -2,7 +2,6 @@ use bevy_ecs::{
     prelude::{Component, Query},
     query::ReadOnlyWorldQuery,
 };
-use bevy_log::{debug, info};
 use bevy_transform::prelude::Transform;
 
 use naia_bevy_shared::Replicate;

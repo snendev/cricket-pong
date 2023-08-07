@@ -9,6 +9,7 @@ use cricket_pong_game::{
     base::{
         components::{
             batter::Batter,
+            phase::GamePhase,
             physics::{
                 ExternalImpulse as SyncImpulse, Rotation as SyncRotation,
                 Translation as SyncTranslation, Velocity as SyncVelocity,
@@ -105,6 +106,7 @@ where
                 connection::disconnection_events,
                 connection::rejection_events,
                 events::receive_entity_assignment_message,
+                events::receive_score_message,
                 events::handle_insert_position,
                 events::spawn_predictions,
             )
@@ -124,6 +126,7 @@ where
                 rollback_component::<SyncVelocity>,
                 rollback_component::<SyncImpulse>,
                 rollback_component::<Batter>,
+                rollback_component::<GamePhase>,
             )
                 .in_set(OnlineGameplaySet::PrepareRollback),
         )

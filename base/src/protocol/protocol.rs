@@ -5,7 +5,7 @@ use naia_bevy_shared::{LinkConditionerConfig, Protocol, ProtocolPlugin};
 use common_lobby_protocol::CommonLobbyProtocolPlugin;
 
 use crate::{
-    components::{ball, batter, boundary, fielder, phase, physics, player, scoreboard, wicket},
+    components::{ball, batter, boundary, fielder, phase, physics, player, wicket},
     protocol::{channels, messages},
 };
 
@@ -15,10 +15,12 @@ impl ProtocolPlugin for CricketPongProtocolPlugin {
     fn build(&self, protocol: &mut Protocol) {
         channels::PlayerActionsChannel::add_to_protocol(protocol);
         channels::PlayerAssignmentChannel::add_to_protocol(protocol);
+        channels::ScoreMessageChannel::add_to_protocol(protocol);
 
         protocol
             .add_message::<messages::PlayerAssignmentMessage>()
             .add_message::<messages::ActionMessage>()
+            .add_message::<messages::ScoreMessage>()
             .add_component::<phase::GamePhase>()
             .add_component::<ball::Ball>()
             .add_component::<batter::Batter>()
@@ -29,7 +31,6 @@ impl ProtocolPlugin for CricketPongProtocolPlugin {
             .add_component::<player::PlayerOne>()
             .add_component::<player::PlayerTwo>()
             .add_component::<player::Position>()
-            .add_component::<scoreboard::Scoreboard>()
             .add_component::<physics::Translation>()
             .add_component::<physics::Rotation>()
             .add_component::<physics::Velocity>()

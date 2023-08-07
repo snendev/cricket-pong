@@ -24,3 +24,15 @@ impl PlayerAssignmentChannel {
         );
     }
 }
+
+#[derive(Channel)]
+pub struct ScoreMessageChannel;
+
+impl ScoreMessageChannel {
+    pub fn add_to_protocol(protocol: &mut Protocol) {
+        protocol.add_channel::<ScoreMessageChannel>(
+            ChannelDirection::ServerToClient,
+            ChannelMode::OrderedReliable(ReliableSettings::default()),
+        );
+    }
+}

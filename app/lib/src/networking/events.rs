@@ -16,13 +16,16 @@ use cricket_pong_game::{
             fielder::{Fielder, FielderTrack},
             phase::GamePhase,
             player::{PlayerOne, PlayerTwo, Position},
-            scoreboard::Scoreboard,
+            scoreboard::{BowlScore, Scoreboard, ScoreboardBundle},
             wicket::Wicket,
         },
-        protocol::{channels::PlayerAssignmentChannel, messages::PlayerAssignmentMessage},
+        protocol::{
+            channels::{PlayerAssignmentChannel, ScoreMessageChannel},
+            messages::{PlayerAssignmentMessage, ScoreMessage},
+        },
     },
     lobby::components::GameLobby,
-    ShouldTick,
+    GameInstance, ShouldTick,
 };
 
 use crate::networking::components::{PredictionOf, SourceOf};
@@ -41,6 +44,25 @@ pub fn receive_entity_assignment_message(
             commands.entity(entity).insert(Controller::One);
             if let Ok(position) = position {
                 commands.entity(entity).insert(position.clone());
+            }
+        }
+    }
+}
+
+pub fn receive_score_message(
+    mut event_reader: EventReader<MessageEvents>,
+    mut scoreboard_query: Query<&mut Scoreboard>,
+) {
+    for event in event_reader.iter() {
+        for score_message in event.read::<ScoreMessageChannel, ScoreMessage>() {
+            if let Ok(mut scoreboard) = scoreboard_query.get_single_mut() {
+                // ScoreMessageChannel is OrderedReliable, so we should be able to do this without
+                // overriding previous messages
+                // however, we do want to force_set in case we have locally predicted a score
+                scoreboard.force_set(
+                    score_message.index,
+                    BowlScore::new(score_message.scorer, score_message.value),
+                );
             }
         }
     }
@@ -86,6 +108,7 @@ fn spawn_prediction_entity(commands: &mut Commands, entity: Entity, name: Name) 
 pub fn spawn_predictions(
     mut commands: Commands,
     mut event_reader: EventReader<InsertComponentEvents>,
+    instance_query: Query<&GameInstance>,
 ) {
     for event in event_reader.iter() {
         for entity in event.read::<PlayerOne>() {
@@ -111,12 +134,18 @@ pub fn spawn_predictions(
         }
         for entity in event.read::<GamePhase>() {
             spawn_prediction_entity(&mut commands, entity, GameLobby::name());
+            // also spawn the scoreboard
+            if let Ok(instance) = instance_query.get(entity) {
+                commands.spawn((
+                    ScoreboardBundle::default(),
+                    instance.clone(),
+                    ShouldRender,
+                    ShouldTick,
+                ));
+            }
         }
         for entity in event.read::<Wicket>() {
             spawn_prediction_entity(&mut commands, entity, Wicket::name());
-        }
-        for entity in event.read::<Scoreboard>() {
-            spawn_prediction_entity(&mut commands, entity, Scoreboard::name());
         }
     }
 }

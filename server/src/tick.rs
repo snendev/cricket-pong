@@ -1,11 +1,25 @@
-use bevy_ecs::event::EventReader;
+use bevy_ecs::{
+    event::EventReader,
+    query::Changed,
+    system::{Local, Query},
+};
+use bevy_utils::HashMap;
 
 use naia_bevy_server::{events::TickEvent, Server};
 
-use cricket_pong_game::base::{
-    actions::Actions,
-    protocol::{channels::PlayerActionsChannel, messages::ActionMessage},
+use cricket_pong_game::{
+    base::{
+        actions::Actions,
+        components::scoreboard::Scoreboard,
+        protocol::{
+            channels::{PlayerActionsChannel, ScoreMessageChannel},
+            messages::{ActionMessage, ScoreMessage},
+        },
+    },
+    GameInstance,
 };
+use naia_server::RoomKey;
+use naia_shared::BigMapKey;
 
 pub fn tick_events(
     mut server: Server,
@@ -26,6 +40,34 @@ pub fn tick_events(
     }
 
     tick_actions
+}
+
+pub fn send_score_mesasges(
+    mut server: Server,
+    updated_scores_query: Query<(&GameInstance, &Scoreboard), Changed<Scoreboard>>,
+    mut last_score_index_by_instance_id: Local<HashMap<u64, usize>>,
+) {
+    for (instance, scoreboard) in updated_scores_query.iter() {
+        let users_in_room = {
+            let room = server.room(&RoomKey::from_u64(*instance.id));
+            room.user_keys().cloned().collect::<Vec<_>>()
+        };
+
+        if let Some(last_score_index) = last_score_index_by_instance_id.get_mut(&*instance.id) {
+            for index in *last_score_index..scoreboard.len() {
+                let score = scoreboard.get(index).unwrap();
+                for user_key in users_in_room.iter() {
+                    server.send_message::<ScoreMessageChannel, ScoreMessage>(
+                        &user_key,
+                        &ScoreMessage::new(score.clone(), index),
+                    );
+                }
+            }
+            *last_score_index = scoreboard.len();
+        } else {
+            last_score_index_by_instance_id.insert(*instance.id, scoreboard.len());
+        }
+    }
 }
 
 pub fn update_entity_scopes(mut server: Server, mut tick_reader: EventReader<TickEvent>) {
