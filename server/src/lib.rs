@@ -1,33 +1,13 @@
 use std::fmt::Debug;
 
-use bevy_app::{
-    prelude::{App, Plugin, Startup, Update},
-    First,
-};
-use bevy_ecs::{
-    prelude::{Component, IntoSystemConfigs, IntoSystemSetConfigs, SystemSet},
-    system::Query,
-};
-use bevy_log::debug;
+use bevy_app::prelude::{App, Plugin, Startup, Update};
+use bevy_ecs::prelude::{IntoSystemConfigs, IntoSystemSetConfigs, SystemSet};
 use bevy_utils::Duration;
 
 use naia_bevy_server::{Plugin as NaiaServerPlugin, ReceiveEvents, ServerConfig};
 
 use common_lobby_server::{resources::UserEntities, CommonLobbyPlugin, LobbySet};
-use cricket_pong_game::{
-    base::{
-        components::{
-            ball::Ball,
-            batter::Batter,
-            fielder::Fielder,
-            phase::GamePhase,
-            physics::{Rotation, Translation},
-            wicket::Wicket,
-        },
-        protocol::protocol,
-    },
-    GameplayPlugin,
-};
+use cricket_pong_game::{base::protocol::protocol, GameplayPlugin};
 
 pub mod init;
 pub mod matchmaking;

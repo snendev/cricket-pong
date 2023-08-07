@@ -23,7 +23,9 @@ pub(crate) fn build_core_tick_schedule() -> (CoreTickSchedule, Schedule) {
         .configure_sets((tick::ActionsSet, physics::PhysicsSet, scoring::ScoringSet).chain())
         .add_systems((
             (tick::track_bowler_transform, tick::consume_actions).in_set(tick::ActionsSet),
-            scoring::register_goals.in_set(scoring::ScoringSet),
+            (scoring::handle_collisions, scoring::register_goals)
+                .chain()
+                .in_set(scoring::ScoringSet),
         ));
     (CoreTickSchedule, schedule)
 }
