@@ -1,19 +1,16 @@
-use naia_bevy_shared::{EntityProperty, Message};
-
 use crate::{
     actions::Action,
     components::{player::Identity, scoreboard::BowlScore},
 };
 
-#[derive(Message)]
 pub struct PlayerAssignmentMessage {
-    pub entity: EntityProperty,
+    // pub entity: EntityProperty,
 }
 
 impl PlayerAssignmentMessage {
     pub fn new() -> Self {
         PlayerAssignmentMessage {
-            entity: EntityProperty::new(),
+            // entity: EntityProperty::new(),
         }
     }
 }
@@ -24,22 +21,20 @@ impl Default for PlayerAssignmentMessage {
     }
 }
 
-#[derive(Message)]
 pub struct ActionMessage {
-    pub entity: EntityProperty,
+    // pub entity: EntityProperty,
     pub action: Option<Action>,
 }
 
 impl ActionMessage {
     pub fn new(action: Option<Action>) -> Self {
         ActionMessage {
-            entity: EntityProperty::new(),
+            // entity: EntityProperty::new(),
             action,
         }
     }
 }
 
-#[derive(Message)]
 pub struct ScoreMessage {
     pub scorer: Identity,
     pub value: u8,

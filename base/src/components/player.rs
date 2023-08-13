@@ -1,20 +1,13 @@
 use std::fmt::Display;
 
 use bevy_core::Name;
-use bevy_ecs::prelude::Component;
+use bevy_ecs::prelude::{Component, ReflectComponent};
+use bevy_reflect::Reflect;
 
-use naia_bevy_shared::{Property, Replicate, Serde};
-
-#[derive(Clone, Copy, Debug, PartialEq, Serde)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Identity {
     One,
     Two,
-}
-
-impl Display for Identity {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
 }
 
 impl TryFrom<u8> for Identity {
@@ -29,65 +22,47 @@ impl TryFrom<u8> for Identity {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Component, Serde)]
-pub enum PositionKind {
+#[derive(Clone, Copy, Component, Debug, Default, PartialEq, Eq, Reflect)]
+#[reflect(Component)]
+pub enum Position {
+    #[default]
     Fielder,
     Batter,
 }
 
-impl std::ops::Not for PositionKind {
-    type Output = PositionKind;
+impl std::ops::Not for Position {
+    type Output = Position;
 
     fn not(self) -> Self::Output {
         match self {
-            PositionKind::Fielder => PositionKind::Batter,
-            PositionKind::Batter => PositionKind::Fielder,
+            Position::Fielder => Position::Batter,
+            Position::Batter => Position::Fielder,
         }
     }
 }
 
-#[derive(Component, Replicate)]
-pub struct Position {
-    kind: Property<PositionKind>,
-}
-
 impl Position {
-    pub fn fielder() -> Self {
-        Position::new_complete(PositionKind::Fielder)
-    }
-
-    pub fn batter() -> Self {
-        Position::new_complete(PositionKind::Batter)
-    }
-
-    pub fn inner(&self) -> PositionKind {
-        *self.kind
-    }
-
-    pub fn is_kind(&self, kind: PositionKind) -> bool {
-        *self.kind == kind
-    }
-
     pub fn is_fielder(&self) -> bool {
-        *self.kind == PositionKind::Fielder
+        *self == Position::Fielder
     }
 
     pub fn is_batter(&self) -> bool {
-        *self.kind == PositionKind::Batter
+        *self == Position::Batter
     }
 
     pub fn switch(&mut self) {
-        *self.kind = !*self.kind;
+        *self = !*self;
     }
 }
 
-impl Display for PositionKind {
+impl Display for Position {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-#[derive(Component, Replicate)]
+#[derive(Component, Default, Reflect)]
+#[reflect(Component)]
 pub struct PlayerOne;
 
 impl PlayerOne {
@@ -96,7 +71,8 @@ impl PlayerOne {
     }
 }
 
-#[derive(Component, Replicate)]
+#[derive(Component, Default, Reflect)]
+#[reflect(Component)]
 pub struct PlayerTwo;
 
 impl PlayerTwo {

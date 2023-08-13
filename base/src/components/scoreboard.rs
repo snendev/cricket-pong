@@ -1,11 +1,9 @@
 use bevy_core::Name;
 use bevy_ecs::prelude::{Bundle, Component};
 
-use naia_bevy_shared::Serde;
-
 use crate::components::player::Identity;
 
-#[derive(Clone, Copy, Debug, PartialEq, Serde)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BowlScore {
     pub scorer: Identity,
     pub value: u8,

@@ -1,27 +1,14 @@
 use bevy_core::Name;
-use bevy_ecs::prelude::{Bundle, Component};
+use bevy_ecs::prelude::{Bundle, Component, ReflectComponent};
+use bevy_reflect::Reflect;
+use bevy_transform::prelude::Transform;
 
-use naia_bevy_shared::{Property, Replicate};
+use crate::rapier::prelude::Velocity;
 
-use crate::components::physics::{Rotation, Translation, Velocity};
-
-#[derive(Component, Replicate)]
+#[derive(Clone, Component, Debug, Default, Reflect)]
+#[reflect(Component)]
 pub struct Batter {
-    pub timer: Property<Option<f32>>,
-}
-
-impl Default for Batter {
-    fn default() -> Self {
-        Self::new_complete(None)
-    }
-}
-
-impl std::fmt::Debug for Batter {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Batter")
-            .field("timer", &*self.timer)
-            .finish()
-    }
+    pub timer: Option<f32>,
 }
 
 impl Batter {
@@ -42,8 +29,7 @@ impl Batter {
 pub struct BatterBundle {
     name: Name,
     batter: Batter,
-    translation: Translation,
-    rotation: Rotation,
+    transform: Transform,
     velocity: Velocity,
 }
 
@@ -52,8 +38,7 @@ impl Default for BatterBundle {
         BatterBundle {
             name: Batter::name(),
             batter: Batter::default(),
-            translation: Translation::new(Batter::RADIUS + Batter::HWIDTH, 0., 1.),
-            rotation: Rotation::default(),
+            transform: Transform::from_xyz(Batter::RADIUS + Batter::HWIDTH, 0., 1.),
             velocity: Velocity::default(),
         }
     }

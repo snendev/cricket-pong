@@ -1,8 +1,6 @@
 use bevy_ecs::prelude::{Entity, Resource};
 
-use naia_bevy_shared::Serde;
-
-#[derive(Clone, Copy, Debug, PartialEq, Serde)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum BatterAction {
     SwingCW,
     SwingCCW,
@@ -19,7 +17,7 @@ impl BatterAction {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Serde)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum FielderAction {
     Bowl,
     MoveInfieldCW,
@@ -38,7 +36,7 @@ impl FielderAction {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serde)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Action {
     Fielder(FielderAction),
     Batter(BatterAction),

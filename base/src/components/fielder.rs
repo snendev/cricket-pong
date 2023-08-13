@@ -1,15 +1,14 @@
 use bevy_core::Name;
-use bevy_ecs::prelude::{Bundle, Component};
+use bevy_ecs::prelude::{Bundle, Component, ReflectComponent};
 use bevy_math::{Quat, Vec3};
+use bevy_reflect::Reflect;
+use bevy_transform::prelude::Transform;
 
-use bevy_rapier2d::prelude::Velocity as RapierVelocity;
+use crate::rapier::prelude::Velocity;
 
-use naia_bevy_shared::{Property, Replicate, Serde};
-
-use crate::components::physics::{Rotation, Translation, Velocity};
-
-#[derive(Clone, Copy, Debug, PartialEq, Serde)]
+#[derive(Clone, Copy, Component, Debug, Default, PartialEq, Reflect)]
 pub enum FielderRing {
+    #[default]
     Infield,
     Outfield,
 }
@@ -26,18 +25,23 @@ impl FielderRing {
     }
 }
 
-#[derive(Component, Replicate)]
+#[derive(Clone, Component, Debug, Default, Reflect)]
+#[reflect(Component)]
 pub struct FielderTrack {
-    pub ring: Property<FielderRing>,
+    pub ring: FielderRing,
 }
 
 impl FielderTrack {
+    fn new(ring: FielderRing) -> Self {
+        FielderTrack { ring }
+    }
+
     pub fn infield() -> Self {
-        FielderTrack::new_complete(FielderRing::Infield)
+        FielderTrack::new(FielderRing::Infield)
     }
 
     pub fn outfield() -> Self {
-        FielderTrack::new_complete(FielderRing::Outfield)
+        FielderTrack::new(FielderRing::Outfield)
     }
 
     pub fn name() -> Name {
@@ -67,7 +71,7 @@ impl FielderTrackBundle {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Serde)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum FielderPosition {
     Top,
     Bottom,
@@ -97,19 +101,10 @@ impl FielderPosition {
     }
 }
 
-#[derive(Component, Replicate)]
+#[derive(Clone, Component, Debug)]
 pub struct Fielder {
-    pub position: Property<FielderPosition>,
-    pub ring: Property<FielderRing>,
-}
-
-impl std::fmt::Debug for Fielder {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Fielder")
-            .field("position", &*self.position)
-            .field("ring", &*self.ring)
-            .finish()
-    }
+    pub position: FielderPosition,
+    pub ring: FielderRing,
 }
 
 impl Fielder {
@@ -121,11 +116,11 @@ impl Fielder {
     pub const HDEPTH: f32 = 2.;
 
     pub fn new(position: FielderPosition, ring: FielderRing) -> Self {
-        Fielder::new_complete(position, ring)
+        Fielder { position, ring }
     }
 
     pub fn hwidth(&self) -> f32 {
-        match *self.ring {
+        match self.ring {
             FielderRing::Infield => Self::INFIELD_HWIDTH,
             FielderRing::Outfield => Self::OUTFIELD_HWIDTH,
         }
@@ -140,8 +135,7 @@ impl Fielder {
 pub struct FielderBundle {
     name: Name,
     fielder: Fielder,
-    translation: Translation,
-    rotation: Rotation,
+    transform: Transform,
     velocity: Velocity,
 }
 
@@ -152,9 +146,8 @@ impl FielderBundle {
         FielderBundle {
             name: Fielder::name(),
             fielder: Fielder::new(position, ring),
-            translation: translation.into(),
-            rotation: rotation.into(),
-            velocity: Velocity::from(&RapierVelocity::zero()),
+            transform: Transform::from_translation(translation).with_rotation(rotation),
+            velocity: Velocity::zero(),
         }
     }
 }

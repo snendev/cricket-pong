@@ -1,14 +1,10 @@
 use bevy_core::Name;
 use bevy_ecs::prelude::{Bundle, Component};
+use bevy_transform::prelude::Transform;
 
-use naia_bevy_shared::Replicate;
+use crate::components::fielder::FielderRing;
 
-use crate::components::{
-    fielder::FielderRing,
-    physics::{Rotation, Translation},
-};
-
-#[derive(Component, Default, Replicate)]
+#[derive(Component, Default)]
 pub struct Boundary;
 
 impl Boundary {
@@ -23,8 +19,7 @@ impl Boundary {
 pub struct BoundaryBundle {
     name: Name,
     boundary: Boundary,
-    translation: Translation,
-    rotation: Rotation,
+    transform: Transform,
 }
 
 impl Default for BoundaryBundle {
@@ -32,8 +27,7 @@ impl Default for BoundaryBundle {
         BoundaryBundle {
             name: Boundary::name(),
             boundary: Boundary,
-            translation: Translation::default(),
-            rotation: Rotation::default(),
+            transform: Transform::default(),
         }
     }
 }

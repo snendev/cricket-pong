@@ -1,13 +1,14 @@
 use bevy_core::Name;
-use bevy_ecs::prelude::{Bundle, Component};
+use bevy_ecs::prelude::{Bundle, Component, ReflectComponent};
+use bevy_reflect::Reflect;
+use bevy_transform::prelude::Transform;
 
-use naia_bevy_shared::{Property, Replicate};
+use crate::rapier::prelude::{ExternalImpulse, Velocity};
 
-use crate::components::physics::{ExternalImpulse, Rotation, Translation, Velocity};
-
-#[derive(Component, Replicate)]
+#[derive(Clone, Debug, Default, Component, Reflect)]
+#[reflect(Component)]
 pub struct Ball {
-    pub passes: Property<usize>,
+    pub passes: usize,
 }
 
 impl Ball {
@@ -18,26 +19,11 @@ impl Ball {
     }
 }
 
-impl Default for Ball {
-    fn default() -> Self {
-        Ball::new_complete(0)
-    }
-}
-
-impl std::fmt::Debug for Ball {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Ball")
-            .field("passes", &*self.passes)
-            .finish()
-    }
-}
-
 #[derive(Bundle)]
 pub struct BallBundle {
     name: Name,
     ball: Ball,
-    translation: Translation,
-    rotation: Rotation,
+    transform: Transform,
     impulse: ExternalImpulse,
     velocity: Velocity,
 }
@@ -47,8 +33,7 @@ impl Default for BallBundle {
         BallBundle {
             name: Ball::name(),
             ball: Ball::default(),
-            translation: Translation::new(0., 0., 2.),
-            rotation: Rotation::default(),
+            transform: Transform::from_xyz(0., 0., 2.),
             velocity: Velocity::default(),
             impulse: ExternalImpulse::default(),
         }
