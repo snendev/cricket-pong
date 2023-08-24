@@ -7,8 +7,7 @@ use bevy_math::prelude::Vec2;
 pub use cricket_pong_base::{
     self as base,
     actions::Actions,
-    components::physics::{ExternalImpulse as SyncImpulse, Velocity as SyncVelocity},
-    lobby::{self, components::GameInstance},
+    components::instance::GameInstance,
     rapier::prelude::{
         ExternalImpulse, RapierConfiguration, RapierPhysicsPlugin, TimestepMode, Velocity,
     },
@@ -110,7 +109,7 @@ where
                             systems::scene::attach_boundary_physics_components,
                             systems::scene::attach_wicket_physics_components,
                         ),
-                        lobby::systems::unload_lobby_scene,
+                        // TODO lobby::systems::unload_lobby_scene,
                     )
                         .chain(),
                 );
@@ -121,20 +120,19 @@ where
             Update,
             (
                 // before ticks, sync network state to physics
-                (
-                    systems::sync::sync_transforms_from_replicated::<With<ShouldTick>>,
-                    systems::sync::sync_component::<SyncVelocity, Velocity, With<ShouldTick>>,
-                    systems::sync::sync_component::<SyncImpulse, ExternalImpulse, With<ShouldTick>>,
-                ),
+                // (
+                //     systems::sync::sync_transforms_from_replicated::<With<ShouldTick>>,
+                //     systems::sync::sync_component::<SyncVelocity, Velocity, With<ShouldTick>>,
+                //     systems::sync::sync_component::<SyncImpulse, ExternalImpulse, With<ShouldTick>>,
+                // ),
                 // run required ticks
-                self.tick_system
-                    .pipe(schedule::run_core_game_loop),
+                self.tick_system.pipe(schedule::run_core_game_loop),
                 // after running all physics ticks, sync physics state back to network components
-                (
-                    systems::sync::sync_transforms_to_replicated::<With<ShouldTick>>,
-                    systems::sync::sync_replicated::<Velocity, SyncVelocity, With<ShouldTick>>,
-                    systems::sync::sync_replicated::<ExternalImpulse, SyncImpulse, With<ShouldTick>>,
-                ),
+                // (
+                //     systems::sync::sync_transforms_to_replicated::<With<ShouldTick>>,
+                //     systems::sync::sync_replicated::<Velocity, SyncVelocity, With<ShouldTick>>,
+                //     systems::sync::sync_replicated::<ExternalImpulse, SyncImpulse, With<ShouldTick>>,
+                // ),
             )
                 .chain()
                 .in_set(self.tick_set),

@@ -78,7 +78,7 @@ fn spawn_player_scoreboard(commands: &mut Commands, position: &Position, player:
         ))
         .with_children(|parent| {
             parent.spawn(TextBundle::from_section(
-                format!("Player {}", player),
+                format!("Player {:?}", player),
                 TextStyle {
                     color: Color::BLACK,
                     font_size: 16.,
@@ -106,7 +106,7 @@ fn spawn_player_scoreboard(commands: &mut Commands, position: &Position, player:
                     player,
                     style: position_text_style.clone(),
                 },
-                TextBundle::from_section(position.inner().to_string(), position_text_style),
+                TextBundle::from_section(position.to_string(), position_text_style),
             ));
         });
 }
@@ -168,7 +168,7 @@ fn track_positions(
         for (mut text, tracker) in position_tracker_query.iter_mut() {
             if tracker.player == identity {
                 if let Ok(position) = position {
-                    *text = Text::from_section(position.inner().to_string(), tracker.style.clone());
+                    *text = Text::from_section(position.to_string(), tracker.style.clone());
                 }
             }
         }
@@ -324,7 +324,7 @@ fn spawn_gameover_panel(
                 })
                 .with_children(|parent| {
                     let winner_text = if let Some(winner) = winner {
-                        format!("Player {} wins!", winner)
+                        format!("Player {:?} wins!", winner)
                     } else {
                         "It's a tie!".to_string()
                     };

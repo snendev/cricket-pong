@@ -4,7 +4,7 @@ use bevy_ecs::{
 };
 
 use cricket_pong_base::{
-    lobby::components::GameInstance,
+    components::instance::GameInstance,
     rapier::prelude::{
         BevyPhysicsHooks, PairFilterContextView, PhysicsSet as RapierPhysicsSet,
         RapierPhysicsPlugin, SolverFlags,
@@ -22,7 +22,7 @@ impl BevyPhysicsHooks for InstanceFilter<'_, '_> {
     fn filter_contact_pair(&self, context: PairFilterContextView) -> Option<SolverFlags> {
         let Ok(instance1) = self.instance.get(context.collider1()) else { return None };
         let Ok(instance2) = self.instance.get(context.collider2()) else { return None };
-        if *instance1.id == *instance2.id {
+        if instance1 == instance2 {
             Some(SolverFlags::COMPUTE_IMPULSES)
         } else {
             None

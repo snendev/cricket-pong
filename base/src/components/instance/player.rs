@@ -1,16 +1,16 @@
-use bevy_ecs::prelude::Component;
-
-use naia_bevy_shared::{Property, Replicate};
+use bevy_ecs::prelude::{Component, ReflectComponent};
+use bevy_reflect::Reflect;
 
 // player ID
 
-#[derive(Component, Replicate)]
-pub struct Player {
-    pub id: Property<u64>,
+#[derive(Clone, Component, Debug, Default, PartialEq, Eq, Reflect)]
+#[reflect(Component)]
+pub struct PlayerID {
+    pub id: u64,
 }
 
-impl Player {
+impl PlayerID {
     pub fn new(id: u64) -> Self {
-        Player::new_complete(id)
+        PlayerID { id }
     }
 }

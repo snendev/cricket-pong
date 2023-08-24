@@ -1,18 +1,15 @@
-use bevy_app::{
-    prelude::{App, Startup},
-    PostUpdate,
-};
-use bevy_ecs::{
-    prelude::{Commands, Entity, Local, OnExit, Query, Res, States, SystemSet},
-    query::Added,
-    system::In,
+use bevy_app::prelude::{App, PostUpdate, Startup};
+use bevy_ecs::prelude::{
+    Added, Commands, Entity, In, Local, OnExit, Query, Res, States, SystemSet,
 };
 
 use bevy_geppetto::Test;
 
 use cricket_pong_base::{
-    components::player::{PlayerOne, PlayerTwo},
-    lobby::components::{GameInstance, GameLobby},
+    components::{
+        instance::{GameInstance, GameLobby},
+        player::{PlayerOne, PlayerTwo},
+    },
     rapier::render::RapierDebugRenderPlugin,
 };
 use cricket_pong_controls::{Controller, PlayerControllerPlugin};

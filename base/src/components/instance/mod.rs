@@ -5,4 +5,4 @@ mod lobby;
 pub use lobby::GameLobby;
 
 mod player;
-pub use player::Player;
+pub use player::PlayerID;

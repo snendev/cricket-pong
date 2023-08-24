@@ -9,12 +9,12 @@ use cricket_pong_base::{
         ball::Ball,
         boundary::Boundary,
         fielder::Fielder,
+        instance::GameInstance,
         phase::GamePhase,
-        player::{Identity, PlayerOne, PlayerTwo, Position, PositionKind},
+        player::{Identity, PlayerOne, PlayerTwo, Position},
         scoreboard::{BowlResult, BowlScore, Scoreboard},
         wicket::Wicket,
     },
-    lobby::components::GameInstance,
     rapier::{prelude::CollisionEvent, rapier::prelude::CollisionEventFlags},
 };
 
@@ -24,7 +24,7 @@ use crate::ShouldTick;
 pub(crate) struct ScoringSet;
 
 #[derive(Event)]
-pub(crate) struct ScoreEvent(GameInstance, PositionKind, u8);
+pub(crate) struct ScoreEvent(GameInstance, Position, u8);
 
 type WithWicket = (With<Wicket>, Without<Ball>, With<ShouldTick>);
 type WithBoundary = (With<Boundary>, Without<Ball>, With<ShouldTick>);
@@ -80,25 +80,25 @@ pub(crate) fn handle_collisions(
                 .get(other_entity)
                 .is_ok_and(|instance| instance == game_instance)
             {
-                score_writer.send(ScoreEvent(game_instance.clone(), PositionKind::Batter, 1));
-                *ball.passes = 0;
+                score_writer.send(ScoreEvent(game_instance.clone(), Position::Batter, 1));
+                ball.passes = 0;
             }
         } else if wicket_query
             .get(other_entity)
             .is_ok_and(|instance| instance == game_instance)
         {
             // score 3 for fielder if the ball hits the wicket
-            score_writer.send(ScoreEvent(game_instance.clone(), PositionKind::Fielder, 3));
-            *ball.passes = 0;
+            score_writer.send(ScoreEvent(game_instance.clone(), Position::Fielder, 3));
+            ball.passes = 0;
         } else if fielder_query
             .get(other_entity)
             .is_ok_and(|instance| instance == game_instance)
         {
             // score 1 for fielder if the ball is passed between paddles 5 times
-            *ball.passes += 1;
-            if *ball.passes >= 5 {
-                score_writer.send(ScoreEvent(game_instance.clone(), PositionKind::Fielder, 1));
-                *ball.passes = 0;
+            ball.passes += 1;
+            if ball.passes >= 5 {
+                score_writer.send(ScoreEvent(game_instance.clone(), Position::Fielder, 1));
+                ball.passes = 0;
             }
         }
     }
@@ -144,12 +144,12 @@ pub(crate) fn register_goals(
         }) else { return };
 
         debug!(
-            "Scoring {} points for {} in instance ({})",
-            scored_points, scoring_position, game_instance
+            "Scoring {} points for {} in instance ({:?})",
+            scored_points, scoring_position, game_instance,
         );
-        let scorer = if player_one_position.is_kind(*scoring_position) {
+        let scorer = if *player_one_position == *scoring_position {
             Identity::One
-        } else if player_two_position.is_kind(*scoring_position) {
+        } else if *player_two_position == *scoring_position {
             Identity::Two
         } else {
             return;

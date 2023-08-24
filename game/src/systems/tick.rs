@@ -13,10 +13,10 @@ use cricket_pong_base::{
         ball::Ball,
         batter::Batter,
         fielder::{Fielder, FielderPosition, FielderRing},
+        instance::GameInstance,
         phase::GamePhase,
         player::{PlayerOne, PlayerTwo},
     },
-    lobby::components::GameInstance,
     rapier::prelude::{ExternalImpulse, Velocity},
 };
 
@@ -46,7 +46,7 @@ pub(crate) fn track_bowler_transform(
             }
         }) else { continue };
         let Some(fielder_transform) = fielders_query.iter().find_map(|(instance, transform, fielder)| {
-            if instance == game_instance && *fielder.position == FielderPosition::Top && *fielder.ring == FielderRing::Infield {
+            if instance == game_instance && fielder.position == FielderPosition::Top && fielder.ring == FielderRing::Infield {
                 Some(transform)
             } else {
                 None
@@ -88,7 +88,7 @@ pub(crate) fn consume_actions(
     for (_, mut bat, mut velocity) in batters_query.iter_mut() {
         if let Some(swing_timer) = bat.timer.as_mut() {
             if *swing_timer <= 0. {
-                *bat.timer = None;
+                bat.timer = None;
                 velocity.angvel = 0.;
             } else {
                 *swing_timer -= time.delta_seconds();
@@ -144,7 +144,7 @@ pub(crate) fn consume_actions(
                 };
                 let Some(rotation_direction) = movement.rotation_direction() else { continue };
                 for (instance, fielder, mut velocity) in fielders_query.iter_mut() {
-                    if instance == game_instance && *fielder.ring == ring_to_match {
+                    if instance == game_instance && fielder.ring == ring_to_match {
                         velocity.angvel = rotation_direction * Fielder::ROTATION_SPEED;
                     }
                 }
@@ -163,7 +163,7 @@ pub(crate) fn consume_actions(
                             };
                         match movement {
                             BatterAction::SwingCW | BatterAction::SwingCCW => {
-                                *bat.timer = Some(Batter::SWING_TIME);
+                                bat.timer = Some(Batter::SWING_TIME);
                             }
                             _ => {}
                         };
