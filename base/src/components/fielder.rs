@@ -71,8 +71,9 @@ impl FielderTrackBundle {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Reflect)]
 pub enum FielderPosition {
+    #[default]
     Top,
     Bottom,
     Left,
@@ -101,7 +102,8 @@ impl FielderPosition {
     }
 }
 
-#[derive(Clone, Component, Debug)]
+#[derive(Clone, Component, Debug, Default, Reflect)]
+#[reflect(Component)]
 pub struct Fielder {
     pub position: FielderPosition,
     pub ring: FielderRing,

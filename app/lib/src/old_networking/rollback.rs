@@ -1,20 +1,10 @@
 use bevy::prelude::{Component, EventReader, Query, ResMut, With, Without};
 
-use naia_bevy_client::{events::UpdateComponentEvents, sequence_greater_than, Replicate, Tick};
-
 use cricket_pong_game::base::{
-    actions::Actions,
-    components::{
-        batter::Batter,
-        physics::{ExternalImpulse, Rotation, Translation, Velocity},
-    },
-    rapier::prelude::RapierConfiguration,
+    actions::Actions, components::batter::Batter, rapier::prelude::RapierConfiguration,
 };
 
-use crate::networking::{
-    components::{PredictionOf, SourceOf},
-    resources::TickHistory,
-};
+use crate::networking::components::{PredictionOf, SourceOf};
 
 fn get_latest_tick(mut event_reader: EventReader<UpdateComponentEvents>) -> Option<Tick> {
     let mut latest_tick: Option<Tick> = None;

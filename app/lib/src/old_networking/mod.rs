@@ -1,14 +1,20 @@
 use bevy::prelude::{
-    in_state, system_adapter, App, Component, IntoSystem, IntoSystemConfigs, IntoSystemSetConfig,
-    IntoSystemSetConfigs, NextState, OnEnter, OnExit, Plugin, PluginGroup, ResMut, States,
-    SystemSet, Update,
+    in_state, App, Component, IntoSystemConfigs, IntoSystemSetConfig, IntoSystemSetConfigs,
+    NextState, OnEnter, OnExit, Plugin, PluginGroup, ResMut, States, SystemSet, Update,
 };
 
 use bevy_replicon::{server::ServerPlugin, ReplicationPlugins};
-
 use cricket_pong_game::GameplayPlugin;
 
-mod init;
+use crate::noop;
+
+pub mod components;
+pub(crate) mod resources;
+
+mod connection;
+mod events;
+mod rollback;
+mod tick;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, States)]
 pub(crate) enum ConnectionState {
@@ -71,13 +77,42 @@ where
         .add_systems(OnExit(self.active_screen), exit_online_game_state)
         .add_systems(
             OnEnter(ConnectionState::Connecting),
-            init::initialize_client
-                .pipe(system_adapter::unwrap)
+            connection::inititate_connection.run_if(in_state(self.active_screen)),
+        )
+        .add_systems(
+            Update,
+            (
+                connection::connection_events,
+                connection::disconnection_events,
+                connection::rejection_events,
+                // todo
+                events::receive_entity_assignment_message,
+                events::receive_score_message,
+                events::handle_insert_position,
+                events::spawn_predictions,
+            )
                 .run_if(in_state(self.active_screen)),
         )
+        .add_plugins(GameplayPlugin::new(
+            OnlineGameplaySet::Tick,
+            tick::send_and_prepare_inputs,
+            noop,
+        ))
+        // .add_systems(
+        //     Update,
+        //     (
+        //         rollback_component::<SyncTranslation>,
+        //         rollback_component::<SyncRotation>,
+        //         rollback_component::<SyncVelocity>,
+        //         rollback_component::<SyncImpulse>,
+        //         rollback_component::<Batter>,
+        //         rollback_component::<GamePhase>,
+        //     )
+        //         .in_set(OnlineGameplaySet::PrepareRollback),
+        // )
         // .add_plugins(GameplayPlugin::new(
-        //     OnlineGameplaySet::Tick,
-        //     tick::send_and_prepare_inputs,
+        //     OnlineGameplaySet::Rollback,
+        //     rollback::replay_ticks,
         //     noop,
         // ))
         ;

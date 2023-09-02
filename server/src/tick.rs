@@ -5,8 +5,6 @@ use bevy_ecs::{
 };
 use bevy_utils::HashMap;
 
-use naia_bevy_server::{events::TickEvent, Server};
-
 use cricket_pong_game::{
     base::{
         actions::Actions,
@@ -18,8 +16,6 @@ use cricket_pong_game::{
     },
     GameInstance,
 };
-use naia_server::RoomKey;
-use naia_shared::BigMapKey;
 
 pub fn tick_events(
     mut server: Server,

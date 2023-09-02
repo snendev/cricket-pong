@@ -8,13 +8,16 @@ license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
+anyhow = "*"
 cricket_pong_game = { path = "../game", features = ["headless"] }
 bevy_app = { version = "0.11" }
 bevy_core = { version = "0.11" }
 bevy_ecs = { version = "0.11" }
 bevy_log = { version = "0.11" }
+bevy_reflect = { version = "0.11" }
 bevy_time = { version = "0.11" }
 bevy_utils = { version = "0.11" }
+bevy_replicon = { version = "0.9" }
 itertools = { version = "0.11" }
 
 [dev-dependencies]

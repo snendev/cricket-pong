@@ -5,8 +5,10 @@ use bevy::prelude::{
 
 use cricket_pong_controls::Controller;
 use cricket_pong_game::{
-    base::components::player::{PlayerOne, PlayerTwo},
-    lobby::components::GameLobby,
+    base::components::{
+        instance::GameLobby,
+        player::{PlayerOne, PlayerTwo},
+    },
     Actions, GameInstance, GameplayPlugin, ShouldTick,
 };
 use cricket_pong_graphics::ShouldRender;

@@ -8,6 +8,7 @@ mod home;
 use home::HomeScreenPlugin;
 
 pub mod local;
+// pub mod old_networking;
 pub mod networking;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, States)]
