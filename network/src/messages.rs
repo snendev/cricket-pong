@@ -1,37 +1,37 @@
-use crate::{
+use serde::{Deserialize, Serialize};
+
+use bevy_ecs::prelude::{Entity, Event};
+
+use cricket_pong_base::{
     actions::Action,
     components::{player::Identity, scoreboard::BowlScore},
 };
 
 pub struct PlayerAssignmentMessage {
-    // pub entity: EntityProperty,
+    pub entity: Entity,
 }
 
 impl PlayerAssignmentMessage {
-    pub fn new() -> Self {
-        PlayerAssignmentMessage {
-            // entity: EntityProperty::new(),
-        }
+    pub fn new(entity: Entity) -> Self {
+        PlayerAssignmentMessage { entity }
     }
 }
 
 impl Default for PlayerAssignmentMessage {
     fn default() -> Self {
-        Self::new()
+        Self::new(Entity::PLACEHOLDER)
     }
 }
 
+#[derive(Debug, Event, Deserialize, Serialize)]
 pub struct ActionMessage {
-    // pub entity: EntityProperty,
+    pub entity: Entity,
     pub action: Option<Action>,
 }
 
 impl ActionMessage {
-    pub fn new(action: Option<Action>) -> Self {
-        ActionMessage {
-            // entity: EntityProperty::new(),
-            action,
-        }
+    pub fn new(entity: Entity, action: Option<Action>) -> Self {
+        ActionMessage { entity, action }
     }
 }
 

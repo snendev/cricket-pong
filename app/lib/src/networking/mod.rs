@@ -4,7 +4,13 @@ use bevy::prelude::{
     SystemSet, Update,
 };
 
-use bevy_replicon::{server::ServerPlugin, ReplicationPlugins};
+use bevy_replicon::{
+    prelude::{SendPolicy, ServerEventAppExt},
+    server::ServerPlugin,
+    ReplicationPlugins,
+};
+
+use network_base::messages::ActionMessage;
 
 use cricket_pong_game::GameplayPlugin;
 
@@ -75,11 +81,10 @@ where
                 .pipe(system_adapter::unwrap)
                 .run_if(in_state(self.active_screen)),
         )
-        // .add_plugins(GameplayPlugin::new(
-        //     OnlineGameplaySet::Tick,
-        //     tick::send_and_prepare_inputs,
-        //     noop,
-        // ))
-        ;
+        .add_plugins(GameplayPlugin::new(
+            OnlineGameplaySet::Tick,
+            || vec![],
+            crate::noop,
+        ));
     }
 }

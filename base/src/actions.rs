@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use bevy_ecs::prelude::{Entity, Resource};
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 pub enum BatterAction {
     SwingCW,
     SwingCCW,
@@ -17,7 +19,7 @@ impl BatterAction {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 pub enum FielderAction {
     Bowl,
     MoveInfieldCW,
@@ -36,7 +38,7 @@ impl FielderAction {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum Action {
     Fielder(FielderAction),
     Batter(BatterAction),

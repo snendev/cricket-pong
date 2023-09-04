@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy_app::prelude::{App, Plugin, Update};
-use bevy_ecs::prelude::{Component, Entity, IntoSystem, IntoSystemConfigs, SystemSet, With};
+use bevy_ecs::prelude::{Component, Entity, IntoSystem, IntoSystemConfigs, SystemSet};
 use bevy_math::prelude::Vec2;
 
 pub use cricket_pong_base::{

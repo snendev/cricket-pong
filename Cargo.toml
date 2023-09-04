@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["app/*", "base", "controls", "game", "graphics", "server"]
+members = ["app/*", "base", "controls", "game", "graphics", "network", "server"]
 
 [profile.release-wasm]
 inherits = "release"

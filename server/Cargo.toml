@@ -9,6 +9,7 @@ publish = false
 
 [dependencies]
 anyhow = "*"
+network_base = { path = "../network" }
 cricket_pong_game = { path = "../game", features = ["headless"] }
 bevy_app = { version = "0.11" }
 bevy_core = { version = "0.11" }

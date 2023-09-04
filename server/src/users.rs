@@ -92,7 +92,7 @@ pub(crate) fn pair_queued_users(
 ) {
     let num_queued = queued_players.0.len();
     let num_matched = num_queued - (num_queued % 2);
-    for (user_one, user_two) in queued_players.0.drain(0..num_matched).tuples() {
+    for (user_one, user_two) in queued_players.0.drain(..).tuples() {
         let room_key = *next_room_key;
         *next_room_key += 1;
 

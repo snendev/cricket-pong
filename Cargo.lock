@@ -1678,6 +1678,7 @@ dependencies = [
  "cricket_pong_controls",
  "cricket_pong_game",
  "cricket_pong_graphics",
+ "network_base",
 ]
 
 [[package]]
@@ -1707,6 +1708,7 @@ dependencies = [
  "bevy_rapier2d",
  "bevy_reflect",
  "bevy_transform",
+ "serde",
 ]
 
 [[package]]
@@ -1765,6 +1767,7 @@ dependencies = [
  "cricket_pong_game",
  "cricket_pong_graphics",
  "itertools",
+ "network_base",
 ]
 
 [[package]]
@@ -3044,6 +3047,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3cf2aae958bd232cac5069850591667ad422d263686d75b52a065f9badeee5a3"
 dependencies = [
  "jni-sys",
+]
+
+[[package]]
+name = "network_base"
+version = "0.1.0"
+dependencies = [
+ "bevy_app",
+ "bevy_core",
+ "bevy_ecs",
+ "bevy_log",
+ "bevy_reflect",
+ "bevy_replicon",
+ "bevy_time",
+ "bevy_utils",
+ "cricket_pong_base",
+ "serde",
 ]
 
 [[package]]

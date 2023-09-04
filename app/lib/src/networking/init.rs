@@ -41,5 +41,6 @@ pub(crate) fn initialize_client(
 
     commands.insert_resource(client);
     commands.insert_resource(transport);
+
     Ok(())
 }
