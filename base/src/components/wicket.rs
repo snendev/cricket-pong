@@ -1,10 +1,12 @@
 use bevy_core::Name;
-use bevy_ecs::prelude::{Bundle, Component};
+use bevy_ecs::prelude::{Bundle, Component, ReflectComponent};
+use bevy_reflect::Reflect;
 use bevy_transform::prelude::Transform;
 
 use crate::components::{ball::Ball, batter::Batter};
 
-#[derive(Component, Debug, Default)]
+#[derive(Component, Debug, Default, Reflect)]
+#[reflect(Component)]
 pub struct Wicket;
 
 impl Wicket {

@@ -18,24 +18,20 @@ use cricket_pong_base::{
     rapier::{prelude::CollisionEvent, rapier::prelude::CollisionEventFlags},
 };
 
-use crate::ShouldTick;
-
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub(crate) struct ScoringSet;
 
 #[derive(Event)]
 pub(crate) struct ScoreEvent(GameInstance, Position, u8);
 
-type WithWicket = (With<Wicket>, Without<Ball>, With<ShouldTick>);
-type WithBoundary = (With<Boundary>, Without<Ball>, With<ShouldTick>);
-type WithFielder = (With<Fielder>, Without<Ball>, With<ShouldTick>);
-type WithoutBall = (Without<Ball>, With<ShouldTick>);
-
+type WithWicket = (With<Wicket>, Without<Ball>);
+type WithBoundary = (With<Boundary>, Without<Ball>);
+type WithFielder = (With<Fielder>, Without<Ball>);
 pub(crate) fn handle_collisions(
     mut collision_events: EventReader<CollisionEvent>,
     mut score_writer: EventWriter<ScoreEvent>,
-    mut ball_query: Query<(&GameInstance, &mut Ball), With<ShouldTick>>,
-    game_phase_query: Query<(&GameInstance, &GamePhase), WithoutBall>,
+    mut ball_query: Query<(&GameInstance, &mut Ball)>,
+    game_phase_query: Query<(&GameInstance, &GamePhase), Without<Ball>>,
     wicket_query: Query<&GameInstance, WithWicket>,
     boundary_query: Query<&GameInstance, WithBoundary>,
     fielder_query: Query<&GameInstance, WithFielder>,
@@ -104,14 +100,14 @@ pub(crate) fn handle_collisions(
     }
 }
 
-type WithPlayer<Player, NotPlayer> = (With<Player>, Without<NotPlayer>, With<ShouldTick>);
+type WithPlayer<Player, NotPlayer> = (With<Player>, Without<NotPlayer>);
 
 pub(crate) fn register_goals(
     mut score_events: EventReader<ScoreEvent>,
     mut player_one_query: Query<(&GameInstance, &mut Position), WithPlayer<PlayerOne, PlayerTwo>>,
     mut player_two_query: Query<(&GameInstance, &mut Position), WithPlayer<PlayerTwo, PlayerOne>>,
-    mut scoreboard_query: Query<(&GameInstance, &mut Scoreboard), With<ShouldTick>>,
-    mut game_phase_query: Query<(&GameInstance, &mut GamePhase), WithoutBall>,
+    mut scoreboard_query: Query<(&GameInstance, &mut Scoreboard)>,
+    mut game_phase_query: Query<(&GameInstance, &mut GamePhase), Without<Ball>>,
 ) {
     for ScoreEvent(game_instance, scoring_position, scored_points) in score_events.iter() {
         let Some(mut player_one_position) = player_one_query.iter_mut().find_map(|(instance, player)| {

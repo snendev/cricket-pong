@@ -1,6 +1,6 @@
 use bevy::prelude::{
-    in_state, Added, App, Commands, Entity, IntoSystemConfigs, IntoSystemSetConfig, Local, OnEnter,
-    Plugin, Query, Res, States, SystemSet, Update,
+    in_state, App, Commands, IntoSystemSetConfig, Local, OnEnter, Plugin, Res, States, SystemSet,
+    Update,
 };
 
 use cricket_pong_controls::Controller;
@@ -9,11 +9,8 @@ use cricket_pong_game::{
         instance::GameLobby,
         player::{PlayerOne, PlayerTwo},
     },
-    Actions, GameInstance, GameplayPlugin, ShouldTick,
+    Actions, GameInstance, GameplayPlugin,
 };
-use cricket_pong_graphics::ShouldRender;
-
-use crate::noop;
 
 fn spawn_local_game(mut commands: Commands) {
     let instance = GameInstance::new(0);
@@ -22,30 +19,14 @@ fn spawn_local_game(mut commands: Commands) {
         PlayerOne::name(),
         Controller::One,
         instance.clone(),
-        ShouldTick,
     ));
     commands.spawn((
         PlayerTwo,
         PlayerTwo::name(),
         Controller::Two,
         instance.clone(),
-        ShouldTick,
     ));
-    commands.spawn((
-        GameLobby::default(),
-        GameLobby::name(),
-        instance,
-        ShouldTick,
-    ));
-}
-
-fn render_local_game_graphics(
-    mut commands: Commands,
-    entity_query: Query<Entity, Added<ShouldTick>>,
-) {
-    for entity in entity_query.iter() {
-        commands.entity(entity).insert(ShouldRender);
-    }
+    commands.spawn((GameLobby::default(), GameLobby::name(), instance));
 }
 
 fn yield_local_ticks(actions: Res<Actions>, mut tick: Local<u16>) -> Vec<(u16, Actions)> {
@@ -79,12 +60,7 @@ where
             Update,
             LocalGameplaySet.run_if(in_state(self.active_screen)),
         )
-        .add_plugins(GameplayPlugin::new(
-            LocalGameplaySet,
-            yield_local_ticks,
-            noop,
-        ))
-        .add_systems(OnEnter(self.active_screen), spawn_local_game)
-        .add_systems(Update, render_local_game_graphics.in_set(LocalGameplaySet));
+        .add_plugins(GameplayPlugin::new(LocalGameplaySet, yield_local_ticks))
+        .add_systems(OnEnter(self.active_screen), spawn_local_game);
     }
 }

@@ -5,9 +5,6 @@ pub mod boundary;
 pub mod fielder;
 pub mod wicket;
 
-// physics
-pub use bevy_rapier2d as rapier;
-
 // player
 pub mod player;
 
@@ -19,3 +16,7 @@ pub mod scoreboard;
 
 // game and player instances
 pub mod instance;
+
+pub mod transform {
+    pub use bevy_transform::prelude::Transform;
+}

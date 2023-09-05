@@ -1,9 +1,12 @@
+use serde::{Deserialize, Serialize};
+
 use bevy_core::Name;
-use bevy_ecs::prelude::{Bundle, Component};
+use bevy_ecs::prelude::{Bundle, Component, ReflectComponent};
+use bevy_reflect::Reflect;
 
 use crate::components::player::Identity;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Reflect, Serialize, Deserialize)]
 pub struct BowlScore {
     pub scorer: Identity,
     pub value: u8,
@@ -16,7 +19,8 @@ impl BowlScore {
 }
 
 // AKA an "inning"
-#[derive(Component, Default)]
+#[derive(Clone, Component, Default, Reflect, Serialize, Deserialize)]
+#[reflect(Component)]
 pub struct Scoreboard {
     scores: Vec<BowlScore>,
 }

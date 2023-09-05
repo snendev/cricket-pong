@@ -632,19 +632,7 @@ dependencies = [
 [[package]]
 name = "bevy_geppetto"
 version = "0.1.0"
-source = "git+https://github.com/snendev/bevy_geppetto.git?rev=b42bb4b#b42bb4bfb74e5ef8632b9cffe6bd937558ecb2a1"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "clap",
- "ron",
- "serde",
-]
-
-[[package]]
-name = "bevy_geppetto"
-version = "0.1.0"
-source = "git+https://github.com/snendev/bevy_geppetto.git#cf9beca9281fa6dfb9e9a650accfb57d09527f3e"
+source = "git+https://github.com/snendev/bevy_geppetto.git?rev=675bf6c#675bf6c5b7a3e010ef8d85823cc7ef23f80c637b"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -1673,7 +1661,7 @@ dependencies = [
  "anyhow",
  "bevy",
  "bevy_egui",
- "bevy_geppetto 0.1.0 (git+https://github.com/snendev/bevy_geppetto.git?rev=b42bb4b)",
+ "bevy_geppetto",
  "bevy_replicon",
  "cricket_pong_controls",
  "cricket_pong_game",
@@ -1716,7 +1704,7 @@ name = "cricket_pong_controls"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy_geppetto 0.1.0 (git+https://github.com/snendev/bevy_geppetto.git)",
+ "bevy_geppetto",
  "cricket_pong_game",
  "leafwing-input-manager",
 ]
@@ -1727,7 +1715,7 @@ version = "0.1.0"
 dependencies = [
  "bevy_app",
  "bevy_ecs",
- "bevy_geppetto 0.1.0 (git+https://github.com/snendev/bevy_geppetto.git?rev=b42bb4b)",
+ "bevy_geppetto",
  "bevy_log",
  "bevy_math",
  "bevy_render",
@@ -1758,7 +1746,7 @@ dependencies = [
  "bevy_app",
  "bevy_core",
  "bevy_ecs",
- "bevy_geppetto 0.1.0 (git+https://github.com/snendev/bevy_geppetto.git?rev=b42bb4b)",
+ "bevy_geppetto",
  "bevy_log",
  "bevy_reflect",
  "bevy_replicon",
@@ -3059,7 +3047,6 @@ dependencies = [
  "bevy_log",
  "bevy_reflect",
  "bevy_replicon",
- "bevy_time",
  "bevy_utils",
  "cricket_pong_base",
  "serde",

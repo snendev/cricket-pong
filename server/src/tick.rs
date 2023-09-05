@@ -1,76 +1,29 @@
-use bevy_ecs::{
-    event::EventReader,
-    query::Changed,
-    system::{Local, Query},
-};
-use bevy_utils::HashMap;
+use bevy_ecs::prelude::EventReader;
+use bevy_replicon::prelude::FromClient;
 
-use cricket_pong_game::{
-    base::{
-        actions::Actions,
-        components::scoreboard::Scoreboard,
-        protocol::{
-            channels::{PlayerActionsChannel, ScoreMessageChannel},
-            messages::{ActionMessage, ScoreMessage},
-        },
-    },
-    GameInstance,
-};
+use cricket_pong_game::base::actions::Actions;
+use network_base::messages::ActionMessageEvent;
 
-pub fn tick_events(
-    mut server: Server,
-    mut tick_reader: EventReader<TickEvent>,
+pub fn handle_actions(
+    mut tick_reader: EventReader<FromClient<ActionMessageEvent>>,
 ) -> Vec<(u16, Actions)> {
-    let mut tick_actions = Vec::new();
-
-    for TickEvent(server_tick) in tick_reader.iter() {
-        let mut actions = Actions(Vec::new());
-        let mut messages = server.receive_tick_buffer_messages(server_tick);
-        for (_user_key, command) in messages.read::<PlayerActionsChannel, ActionMessage>() {
-            let Some(entity) = command.entity.get(&server) else { continue };
-            if let Some(action) = command.action {
-                actions.0.push((entity, action));
-            }
-        }
-        tick_actions.push((*server_tick, actions));
-    }
-
-    tick_actions
-}
-
-pub fn send_score_mesasges(
-    mut server: Server,
-    updated_scores_query: Query<(&GameInstance, &Scoreboard), Changed<Scoreboard>>,
-    mut last_score_index_by_instance_id: Local<HashMap<u64, usize>>,
-) {
-    for (instance, scoreboard) in updated_scores_query.iter() {
-        let users_in_room = {
-            let room = server.room(&RoomKey::from_u64(*instance.id));
-            room.user_keys().cloned().collect::<Vec<_>>()
-        };
-
-        if let Some(last_score_index) = last_score_index_by_instance_id.get_mut(&*instance.id) {
-            for index in *last_score_index..scoreboard.len() {
-                let score = scoreboard.get(index).unwrap();
-                for user_key in users_in_room.iter() {
-                    server.send_message::<ScoreMessageChannel, ScoreMessage>(
-                        user_key,
-                        &ScoreMessage::new(*score, index),
-                    );
-                }
-            }
-            *last_score_index = scoreboard.len();
-        } else {
-            last_score_index_by_instance_id.insert(*instance.id, scoreboard.len());
-        }
-    }
-}
-
-pub fn update_entity_scopes(mut server: Server, mut tick_reader: EventReader<TickEvent>) {
-    if !tick_reader.iter().count() != 0 {
-        // Update entity scopes
-        for (_room_key, user_key, entity) in server.scope_checks() {
-            server.user_scope(&user_key).include(&entity);
-        }
-    }
+    vec![(
+        0,
+        Actions(
+            tick_reader
+                .iter()
+                .flat_map(
+                    |FromClient {
+                         client_id: _,
+                         event,
+                     }| {
+                        event
+                            .action
+                            .as_ref()
+                            .map(|action| (event.entity, action.clone()))
+                    },
+                )
+                .collect(),
+        ),
+    )]
 }

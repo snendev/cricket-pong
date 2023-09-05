@@ -1,20 +1,23 @@
 use bevy::prelude::{
     in_state, system_adapter, App, Component, IntoSystem, IntoSystemConfigs, IntoSystemSetConfig,
     IntoSystemSetConfigs, NextState, OnEnter, OnExit, Plugin, PluginGroup, ResMut, States,
-    SystemSet, Update,
+    SystemSet, Transform, Update,
 };
 
-use bevy_replicon::{
-    prelude::{SendPolicy, ServerEventAppExt},
-    server::ServerPlugin,
-    ReplicationPlugins,
+use bevy_replicon::{server::ServerPlugin, ReplicationPlugins};
+
+use cricket_pong_game::{
+    base::{
+        components::{ball::Ball, batter::Batter, fielder::Fielder},
+        rapier::prelude::{ExternalImpulse, Velocity},
+    },
+    GameplayPlugin,
 };
+use network_base::{sync_from_replication, ReplicationStrategyPlugin};
 
-use network_base::messages::ActionMessage;
-
-use cricket_pong_game::GameplayPlugin;
-
+mod events;
 mod init;
+mod tick;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, States)]
 pub(crate) enum ConnectionState {
@@ -72,6 +75,7 @@ where
                 .chain(),
         )
         .add_plugins(ReplicationPlugins.build().disable::<ServerPlugin>())
+        .add_plugins(ReplicationStrategyPlugin)
         .add_state::<ConnectionState>()
         .add_systems(OnEnter(self.active_screen), enter_online_game_state)
         .add_systems(OnExit(self.active_screen), exit_online_game_state)
@@ -83,8 +87,20 @@ where
         )
         .add_plugins(GameplayPlugin::new(
             OnlineGameplaySet::Tick,
-            || vec![],
-            crate::noop,
-        ));
+            tick::send_and_prepare_inputs,
+        ))
+        .add_systems(
+            Update,
+            (
+                sync_from_replication::<Transform>,
+                sync_from_replication::<Velocity>,
+                sync_from_replication::<ExternalImpulse>,
+                sync_from_replication::<Fielder>,
+                sync_from_replication::<Batter>,
+                sync_from_replication::<Ball>,
+                events::receive_entity_assignment_message, // TODO: entity assignment messages
+            )
+                .before(OnlineGameplaySet::Tick),
+        );
     }
 }

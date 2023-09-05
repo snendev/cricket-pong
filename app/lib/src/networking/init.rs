@@ -27,7 +27,8 @@ pub(crate) fn initialize_client(
         ..Default::default()
     });
 
-    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+    let current_time: std::time::Duration =
+        SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
     let client_id = current_time.as_millis() as u64;
     let server_addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), 5678);
     let socket = UdpSocket::bind((Ipv4Addr::LOCALHOST, 0))?;

@@ -1,54 +1,43 @@
 use std::marker::PhantomData;
 
 use bevy_app::prelude::{App, Plugin, Update};
-use bevy_ecs::prelude::{Component, Entity, IntoSystem, IntoSystemConfigs, SystemSet};
+use bevy_ecs::prelude::{IntoSystem, IntoSystemConfigs, SystemSet};
 use bevy_math::prelude::Vec2;
 
 pub use cricket_pong_base::{
     self as base,
     actions::Actions,
     components::instance::GameInstance,
-    rapier::prelude::{
-        ExternalImpulse, RapierConfiguration, RapierPhysicsPlugin, TimestepMode, Velocity,
-    },
+    rapier::prelude::{RapierConfiguration, RapierPhysicsPlugin, TimestepMode},
 };
 
 mod objects;
 mod schedule;
 mod systems;
 
-#[derive(Component)]
-pub struct ShouldTick;
-
 // This is the plugin that attaches gameplay
 // It allows a SystemSet type parameter so that different environments can attach
 // the same logic and run them under the appropriate conditions.
-pub struct GameplayPlugin<Set, T, TM, S, SM>
+pub struct GameplayPlugin<Set, T, TM>
 where
     Set: SystemSet,
     T: IntoSystem<(), Vec<(u16, Actions)>, TM> + Copy,
-    S: IntoSystem<Vec<(GameInstance, Vec<Entity>)>, (), SM> + Copy,
 {
     tick_set: Set,
     tick_system: T,
     tick_params_marker: PhantomData<TM>,
-    on_spawn_system: S,
-    on_spawn_params_marker: PhantomData<SM>,
 }
 
-impl<Set, T, TM, S, SM> GameplayPlugin<Set, T, TM, S, SM>
+impl<Set, T, TM> GameplayPlugin<Set, T, TM>
 where
     Set: SystemSet,
     T: IntoSystem<(), Vec<(u16, Actions)>, TM> + Copy,
-    S: IntoSystem<Vec<(GameInstance, Vec<Entity>)>, (), SM> + Copy,
 {
-    pub fn new(tick_set: Set, tick_system: T, on_spawn_system: S) -> Self {
+    pub fn new(tick_set: Set, tick_system: T) -> Self {
         GameplayPlugin {
             tick_set,
             tick_system,
             tick_params_marker: PhantomData::<TM>,
-            on_spawn_system,
-            on_spawn_params_marker: PhantomData::<SM>,
         }
     }
 }
@@ -68,13 +57,11 @@ impl GameplayMarkerPlugin {
     }
 }
 
-impl<Set, T, TM, S, SM> Plugin for GameplayPlugin<Set, T, TM, S, SM>
+impl<Set, T, TM> Plugin for GameplayPlugin<Set, T, TM>
 where
     Set: SystemSet + Copy,
     T: IntoSystem<(), Vec<(u16, Actions)>, TM> + Copy + Send + Sync + 'static,
     TM: Send + Sync + 'static,
-    S: IntoSystem<Vec<(GameInstance, Vec<Entity>)>, (), SM> + Copy + Send + Sync + 'static,
-    SM: Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
         // if this has not been added yet, initialize physics, the marker, and GamePhase state
@@ -101,17 +88,14 @@ where
                 .add_systems(
                     Update,
                     (
-                        systems::scene::spawn_scene.pipe(self.on_spawn_system),
-                        (
-                            systems::scene::attach_ball_physics_components,
-                            systems::scene::attach_fielder_physics_components,
-                            systems::scene::attach_batter_physics_components,
-                            systems::scene::attach_boundary_physics_components,
-                            systems::scene::attach_wicket_physics_components,
-                        ),
+                        systems::scene::spawn_game_scene,
+                        systems::scene::attach_ball_physics_components,
+                        systems::scene::attach_fielder_physics_components,
+                        systems::scene::attach_batter_physics_components,
+                        systems::scene::attach_boundary_physics_components,
+                        systems::scene::attach_wicket_physics_components,
                         // TODO lobby::systems::unload_lobby_scene,
-                    )
-                        .chain(),
+                    ),
                 );
         }
 

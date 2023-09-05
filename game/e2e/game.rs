@@ -1,7 +1,5 @@
-use bevy_app::prelude::{App, PostUpdate, Startup};
-use bevy_ecs::prelude::{
-    Added, Commands, Entity, In, Local, OnExit, Query, Res, States, SystemSet,
-};
+use bevy_app::prelude::{App, Startup};
+use bevy_ecs::prelude::{Commands, Local, OnExit, Query, Res, States, SystemSet};
 
 use bevy_geppetto::Test;
 
@@ -13,9 +11,9 @@ use cricket_pong_base::{
     rapier::render::RapierDebugRenderPlugin,
 };
 use cricket_pong_controls::{Controller, PlayerControllerPlugin};
-use cricket_pong_graphics::{GraphicsPlugin, ShouldRender};
+use cricket_pong_graphics::GraphicsPlugin;
 
-use cricket_pong_game::{Actions, GameplayPlugin, ShouldTick};
+use cricket_pong_game::{Actions, GameplayPlugin};
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, SystemSet)]
 pub struct GameplaySet;
@@ -32,24 +30,18 @@ fn spawn_lobby(mut commands: Commands) {
         GameLobby::default(),
         GameLobby::name(),
         GameInstance::new(0),
-        ShouldTick,
-        ShouldRender,
     ));
     commands.spawn((
         PlayerOne,
         PlayerOne::name(),
         GameInstance::new(0),
         Controller::One,
-        ShouldTick,
-        ShouldRender,
     ));
     commands.spawn((
         PlayerTwo,
         PlayerTwo::name(),
         GameInstance::new(0),
         Controller::Two,
-        ShouldTick,
-        ShouldRender,
     ));
 }
 
@@ -65,14 +57,6 @@ fn unload_lobby(mut lobby_query: Query<&mut GameLobby>) {
     }
 }
 
-fn render_graphics(mut commands: Commands, entity_query: Query<Entity, Added<ShouldTick>>) {
-    for entity in entity_query.iter() {
-        commands.entity(entity).insert(ShouldRender);
-    }
-}
-
-fn noop(_: In<Vec<(GameInstance, Vec<Entity>)>>) {}
-
 fn main() {
     Test {
         label: "Game sandbox".to_string(),
@@ -80,14 +64,13 @@ fn main() {
             app.add_state::<TestState>()
                 .add_plugins((
                     RapierDebugRenderPlugin::default(),
-                    GameplayPlugin::new(GameplaySet, yield_local_ticks, noop),
+                    GameplayPlugin::new(GameplaySet, yield_local_ticks),
                 ))
                 .add_plugins((
                     GraphicsPlugin::new(TestState::Complete),
                     PlayerControllerPlugin,
                 ))
                 .add_systems(Startup, spawn_lobby)
-                .add_systems(PostUpdate, render_graphics)
                 .add_systems(OnExit(TestState::Test), unload_lobby);
         },
     }

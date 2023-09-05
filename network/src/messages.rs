@@ -1,52 +1,43 @@
+use bevy_replicon::prelude::{MapError, MapEventEntities};
 use serde::{Deserialize, Serialize};
 
-use bevy_ecs::prelude::{Entity, Event};
-
-use cricket_pong_base::{
-    actions::Action,
-    components::{player::Identity, scoreboard::BowlScore},
+use bevy_ecs::{
+    entity::EntityMap,
+    prelude::{Entity, Event},
 };
 
-pub struct PlayerAssignmentMessage {
-    pub entity: Entity,
+use cricket_pong_base::{actions::Action, components::player::Identity};
+
+#[derive(Debug, Event, Deserialize, Serialize)]
+pub struct PlayerAssignmentMessageEvent {
+    pub identity: Identity,
 }
 
-impl PlayerAssignmentMessage {
-    pub fn new(entity: Entity) -> Self {
-        PlayerAssignmentMessage { entity }
-    }
-}
-
-impl Default for PlayerAssignmentMessage {
-    fn default() -> Self {
-        Self::new(Entity::PLACEHOLDER)
+impl PlayerAssignmentMessageEvent {
+    pub fn new(identity: Identity) -> Self {
+        PlayerAssignmentMessageEvent { identity }
     }
 }
 
 #[derive(Debug, Event, Deserialize, Serialize)]
-pub struct ActionMessage {
+pub struct ActionMessageEvent {
     pub entity: Entity,
     pub action: Option<Action>,
 }
 
-impl ActionMessage {
+impl ActionMessageEvent {
     pub fn new(entity: Entity, action: Option<Action>) -> Self {
-        ActionMessage { entity, action }
+        ActionMessageEvent { entity, action }
     }
 }
 
-pub struct ScoreMessage {
-    pub scorer: Identity,
-    pub value: u8,
-    pub index: usize,
-}
-
-impl ScoreMessage {
-    pub fn new(score: BowlScore, index: usize) -> Self {
-        ScoreMessage {
-            scorer: score.scorer,
-            value: score.value,
-            index,
+impl MapEventEntities for ActionMessageEvent {
+    fn map_entities(&mut self, entity_map: &EntityMap) -> Result<(), MapError> {
+        if let Some(entity) = entity_map.get(self.entity) {
+            self.entity = entity;
+            Ok(())
+        } else {
+            Err(MapError(self.entity))
         }
     }
 }

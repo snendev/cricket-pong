@@ -1,7 +1,6 @@
-use bevy::prelude::{App, DefaultPlugins, Entity, In, PluginGroup, States, Window, WindowPlugin};
+use bevy::prelude::{App, DefaultPlugins, PluginGroup, States, Window, WindowPlugin};
 
 use cricket_pong_controls::PlayerControllerPlugin;
-use cricket_pong_game::GameInstance;
 use cricket_pong_graphics::GraphicsPlugin;
 
 mod home;
@@ -41,5 +40,3 @@ pub fn run_app(canvas: Option<String>) {
         ))
         .run();
 }
-
-pub(crate) fn noop(_: In<Vec<(GameInstance, Vec<Entity>)>>) {}

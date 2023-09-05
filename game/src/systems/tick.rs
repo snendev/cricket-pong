@@ -20,18 +20,13 @@ use cricket_pong_base::{
     rapier::prelude::{ExternalImpulse, Velocity},
 };
 
-use crate::ShouldTick;
-
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub(crate) struct ActionsSet;
 
-type WithBall = (With<Ball>, With<ShouldTick>);
-type WithoutBall = (Without<Ball>, With<ShouldTick>);
-
 pub(crate) fn track_bowler_transform(
-    games_query: Query<(&GameInstance, &GamePhase), With<ShouldTick>>,
-    mut balls_query: Query<(&GameInstance, &mut Transform, &mut Velocity), WithBall>,
-    fielders_query: Query<(&GameInstance, &Transform, &Fielder), WithoutBall>,
+    games_query: Query<(&GameInstance, &GamePhase)>,
+    mut balls_query: Query<(&GameInstance, &mut Transform, &mut Velocity), With<Ball>>,
+    fielders_query: Query<(&GameInstance, &Transform, &Fielder), Without<Ball>>,
 ) {
     for (game_instance, phase) in games_query.iter() {
         if !phase.is_bowling() {
@@ -63,15 +58,10 @@ pub(crate) fn track_bowler_transform(
     }
 }
 
-type WithoutObjects = (
-    Without<Fielder>,
-    Without<Batter>,
-    Without<Ball>,
-    With<ShouldTick>,
-);
-type WithSomePlayer = (With<ShouldTick>, Or<(With<PlayerOne>, With<PlayerTwo>)>);
-type WithoutBatterOrBall = (Without<Batter>, Without<Ball>, With<ShouldTick>);
-type WithoutFielderOrBall = (Without<Fielder>, Without<Ball>, With<ShouldTick>);
+type WithoutObjects = (Without<Fielder>, Without<Batter>, Without<Ball>);
+type WithSomePlayer = Or<(With<PlayerOne>, With<PlayerTwo>)>;
+type WithoutBatterOrBall = (Without<Batter>, Without<Ball>);
+type WithoutFielderOrBall = (Without<Fielder>, Without<Ball>);
 
 pub(crate) fn consume_actions(
     mut actions: ResMut<Actions>,
@@ -79,7 +69,7 @@ pub(crate) fn consume_actions(
     player_query: Query<&GameInstance, WithSomePlayer>,
     mut fielders_query: Query<(&GameInstance, &Fielder, &mut Velocity), WithoutBatterOrBall>,
     mut batters_query: Query<(&GameInstance, &mut Batter, &mut Velocity), WithoutFielderOrBall>,
-    mut ball_query: Query<(&GameInstance, &mut ExternalImpulse, &Transform), WithBall>,
+    mut ball_query: Query<(&GameInstance, &mut ExternalImpulse, &Transform)>,
     time: Res<Time>,
 ) {
     for (_, _, mut velocity) in fielders_query.iter_mut() {

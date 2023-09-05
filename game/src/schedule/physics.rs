@@ -1,5 +1,5 @@
 use bevy_ecs::{
-    prelude::{IntoSystemConfigs, IntoSystemSetConfigs, Query, Schedule, SystemSet, With},
+    prelude::{IntoSystemConfigs, IntoSystemSetConfigs, Query, Schedule, SystemSet},
     system::SystemParam,
 };
 
@@ -11,11 +11,9 @@ use cricket_pong_base::{
     },
 };
 
-use crate::ShouldTick;
-
 #[derive(SystemParam)]
 pub(crate) struct InstanceFilter<'w, 's> {
-    instance: Query<'w, 's, &'static GameInstance, With<ShouldTick>>,
+    instance: Query<'w, 's, &'static GameInstance>,
 }
 
 impl BevyPhysicsHooks for InstanceFilter<'_, '_> {

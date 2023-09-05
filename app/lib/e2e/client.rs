@@ -1,4 +1,4 @@
-use bevy::prelude::{Added, App, Entity, Name, Or, Query, States, Update};
+use bevy::prelude::{App, States};
 
 use bevy_geppetto::Test;
 
@@ -16,7 +16,7 @@ pub enum TestState {
 
 fn main() {
     Test {
-        label: "Game sandbox".to_string(),
+        label: "Client".to_string(),
         setup: |app: &mut App| {
             app.add_state::<TestState>()
                 .add_plugins(OnlineGameplayPlugin::new(TestState::Test))

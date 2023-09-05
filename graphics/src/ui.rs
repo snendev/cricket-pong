@@ -5,7 +5,7 @@ use bevy::{
         Added, AlignItems, App, BackgroundColor, BuildChildren, ButtonBundle, Changed,
         ChildBuilder, Color, Commands, Component, DespawnRecursiveExt, DetectChanges, Display,
         Entity, FlexDirection, GridAutoFlow, IntoSystemConfigs, JustifyContent, Name, NextState,
-        NodeBundle, OnEnter, Or, Plugin, PositionType, PostUpdate, Query, Ref, ResMut, States,
+        NodeBundle, OnEnter, Plugin, PositionType, PostUpdate, Query, Ref, ResMut, States,
         Style, SystemSet, Text, TextBundle, TextStyle, UiRect, Val, With, Without,
     },
     ui::{BorderColor, GridPlacement, GridTrack, Interaction},
@@ -16,8 +16,6 @@ use cricket_pong_base::components::{
     player::{Identity, PlayerOne, PlayerTwo, Position},
     scoreboard::Scoreboard,
 };
-
-use crate::ShouldRender;
 
 #[derive(Component)]
 struct ScoreboardUI;
@@ -111,17 +109,10 @@ fn spawn_player_scoreboard(commands: &mut Commands, position: &Position, player:
         });
 }
 
-type WithAddedPlayer<Player, NotPlayer> = (
-    With<Player>,
-    Without<NotPlayer>,
-    With<ShouldRender>,
-    Or<(Added<Player>, Added<ShouldRender>)>,
-);
-
 fn spawn_scoreboard(
     mut commands: Commands,
-    player_one_query: Query<&Position, WithAddedPlayer<PlayerOne, PlayerTwo>>,
-    player_two_query: Query<&Position, WithAddedPlayer<PlayerTwo, PlayerOne>>,
+    player_one_query: Query<&Position, Added<PlayerOne>>,
+    player_two_query: Query<&Position, Added<PlayerTwo>>,
 ) {
     let Ok(position_one) = player_one_query.get_single() else { return };
     let Ok(position_two) = player_two_query.get_single() else { return };
@@ -149,12 +140,7 @@ fn track_scores(
     }
 }
 
-type WithChangedPosition<Player, NotPlayer> = (
-    Changed<Position>,
-    With<Player>,
-    Without<NotPlayer>,
-    With<ShouldRender>,
-);
+type WithChangedPosition<Player, NotPlayer> = (Changed<Position>, With<Player>, Without<NotPlayer>);
 
 fn track_positions(
     player_one_query: Query<&Position, WithChangedPosition<PlayerOne, PlayerTwo>>,
@@ -175,13 +161,7 @@ fn track_positions(
     }
 }
 
-type WithAddedScoreboard = (
-    With<Scoreboard>,
-    With<ShouldRender>,
-    Or<(Added<Scoreboard>, Added<ShouldRender>)>,
-);
-
-fn spawn_over_tracker(mut commands: Commands, scoreboard_query: Query<(), WithAddedScoreboard>) {
+fn spawn_over_tracker(mut commands: Commands, scoreboard_query: Query<(), Added<Scoreboard>>) {
     for _ in scoreboard_query.iter() {
         commands
             .spawn((
@@ -248,7 +228,7 @@ fn spawn_over_row(parent: &mut ChildBuilder, row: usize, text_style: &TextStyle)
 fn update_over_tracker(
     mut container_query: Query<&mut BackgroundColor>,
     mut text_node_query: Query<(&BowlTracker, &mut Text)>,
-    scoreboard_query: Query<&Scoreboard, With<ShouldRender>>,
+    scoreboard_query: Query<&Scoreboard>,
 ) {
     let Ok(scoreboard) = scoreboard_query.get_single() else { return };
     for (bowl_tracker, mut text) in text_node_query.iter_mut() {
@@ -273,7 +253,7 @@ struct ReturnButton;
 fn spawn_gameover_panel(
     mut commands: Commands,
     game_query: Query<Ref<GamePhase>>,
-    scoreboard_query: Query<&Scoreboard, With<ShouldRender>>,
+    scoreboard_query: Query<&Scoreboard>,
 ) {
     let Ok(game) = game_query.get_single() else { return; };
     if !game.is_changed() || !game.is_game_over() {

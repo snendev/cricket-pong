@@ -33,7 +33,7 @@ pub(crate) fn initialize_server(
     info!("Initializing server on {}", public_addr);
     let socket = UdpSocket::bind(public_addr)?;
     let server_config = ServerConfig {
-        max_clients: 1,
+        max_clients: 2,
         protocol_id: 0,
         public_addr,
         authentication: ServerAuthentication::Unsecure,

@@ -1,11 +1,14 @@
 use std::fmt::Display;
 
+use serde::{Deserialize, Serialize};
+
 use bevy_core::Name;
 use bevy_ecs::prelude::{Component, ReflectComponent};
 use bevy_reflect::Reflect;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Reflect, Deserialize, Serialize)]
 pub enum Identity {
+    #[default]
     One,
     Two,
 }
